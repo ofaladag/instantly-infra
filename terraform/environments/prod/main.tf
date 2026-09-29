@@ -1,0 +1,18 @@
+module "infra" {
+  source                 = "../../modules/stack"
+  environment            = "prod"
+  project                = var.project
+  location               = var.location
+  network_zone           = var.network_zone
+  app_server_type        = var.app_server_type
+  data_server_type       = var.data_server_type
+  ssh_public_keys        = var.ssh_public_keys
+  coolify_ssh_public_key = var.coolify_ssh_public_key
+  admin_ipv4_cidrs       = var.admin_ipv4_cidrs
+  domain                 = var.domain
+  cloudflare_zone_id     = var.cloudflare_zone_id
+  public_app_subdomains  = var.public_app_subdomains
+  data_volume_size_gb    = var.data_volume_size_gb
+  server_backups         = var.server_backups
+  install_coolify        = var.install_coolify
+}

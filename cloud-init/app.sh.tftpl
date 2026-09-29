@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -euo pipefail
+export DEBIAN_FRONTEND=noninteractive
+apt-get -o Acquire::Retries=10 update
+apt-get -o Acquire::Retries=10 install -y curl ca-certificates iptables
+install -d /etc/sysctl.d /etc/docker /etc/systemd/system/docker.service.d
+printf 'net.ipv4.ip_forward=1\n' > /etc/sysctl.d/90-instantly-router.conf
+cat > /etc/systemd/system/instantly-nat.service <<'UNIT'
+[Unit]
+Description=Instantly DATA-01 outbound NAT
+Wants=network-online.target
+After=network-online.target
+Before=docker.service
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/instantly-nat
+RemainAfterExit=yes
+[Install]
+WantedBy=multi-user.target
+UNIT
+cat > /etc/systemd/system/docker.service.d/20-instantly-nat.conf <<'UNIT'
+[Unit]
+Requires=instantly-nat.service
+After=instantly-nat.service
+[Service]
+ExecStartPost=/usr/local/sbin/instantly-nat
+UNIT
+systemctl daemon-reload
+systemctl enable --now instantly-nat.service
+# This is first-boot scaffolding, not a continuously reconciled configuration manager.
+%{ if install_coolify ~}
+curl --fail --silent --show-error --location --retry 5 https://cdn.coollabs.io/coolify/install.sh -o /root/coolify-install.sh
+bash /root/coolify-install.sh
+%{ endif ~}
+touch /var/lib/instantly-bootstrap-complete

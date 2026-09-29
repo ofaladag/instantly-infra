@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -euo pipefail
+private_if=$(ip -4 route get ${app_ip} | awk '{for(i=1;i<=NF;i++) if($i=="dev") {print $(i+1);exit}}')
+test -n "$private_if"
+# Only our own table is replaced; never flush Docker's ruleset.
+nft list table inet instantly_data >/dev/null 2>&1 || nft add table inet instantly_data
+nft -f - <<RULES
+flush table inet instantly_data
+table inet instantly_data {
+  chain input {
+    type filter hook input priority -10; policy drop;
+    iifname "lo" accept
+    ct state established,related accept
+    ct state invalid drop
+    udp sport 67 udp dport 68 accept
+    ip protocol icmp accept
+    ip saddr ${app_ip} tcp dport { 22, 5432, 6379 } accept
+  }
+  chain forward {
+    type filter hook forward priority -10; policy accept;
+    ct state established,related accept
+    ct state invalid drop
+    iifname "$private_if" ip saddr ${app_ip} meta l4proto tcp ct original proto-dst { 5432, 6379 } accept
+    iifname "$private_if" drop
+  }
+}
+RULES

@@ -1,0 +1,13 @@
+internal.stg.example.com:53 {
+    errors
+    hosts /etc/coredns/internal.hosts {
+        ttl 60
+    }
+    cache 60
+}
+.:53 {
+    errors
+    forward . 1.1.1.1 9.9.9.9
+    cache 60
+    loop
+}

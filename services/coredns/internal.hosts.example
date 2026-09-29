@@ -1,0 +1,2 @@
+10.20.0.20 coolify.internal.stg.example.com wg.internal.stg.example.com
+10.20.0.30 postgres.internal.stg.example.com redis.internal.stg.example.com

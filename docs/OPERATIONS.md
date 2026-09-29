@@ -40,7 +40,12 @@ old starter state or apply the original generated repository again.
    after fixing the cause. Check route/NAT/firewall units (and the mount unit in prod) before continuing.
 6. If install_coolify=true was set before initial apply, the official installer
    ran on APP. Otherwise review https://cdn.coollabs.io/coolify/install.sh on APP,
-   download it to a file and run it as root. The installer installs Docker.
+   download it to a file and run it as root with
+   `DOCKER_ADDRESS_POOL_BASE=172.20.0.0/16 DOCKER_ADDRESS_POOL_SIZE=24`.
+   The installer installs Docker. Its default 10.0.0.0/8 container pool overlaps
+   our private/VPN ranges, so preserve this override. Before DATA validation,
+   configure its Docker default-address-pools to 172.21.0.0/16 (size 24) and
+   MTU 1450 in /etc/docker/daemon.json. This was done on the initial stg DATA host.
    This upstream installer is mutable; record the tested Coolify version. This
    starter does not claim fully pinned OS/package/Coolify reproducibility.
 7. Use `terraform output -raw coolify_initial_tunnel`; open localhost:8000 and

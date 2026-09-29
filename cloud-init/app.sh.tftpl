@@ -30,6 +30,6 @@ systemctl enable --now instantly-nat.service
 # This is first-boot scaffolding, not a continuously reconciled configuration manager.
 %{ if install_coolify ~}
 curl --fail --silent --show-error --location --retry 5 https://cdn.coollabs.io/coolify/install.sh -o /root/coolify-install.sh
-bash /root/coolify-install.sh
+DOCKER_ADDRESS_POOL_BASE=172.20.0.0/16 DOCKER_ADDRESS_POOL_SIZE=24 bash /root/coolify-install.sh
 %{ endif ~}
 touch /var/lib/instantly-bootstrap-complete

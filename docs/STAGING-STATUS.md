@@ -133,3 +133,14 @@ acme-internal.json and Traefik manages renewal. Initial validation hit cached
 NXDOMAIN from Quad9; using 1.1.1.1 for ACME resolved issuance. Configuration is
 mirrored under services/proxy and saved in Coolify's proxy configuration store.
 Public API HTTPS will be configured when its application resource is deployed.
+
+## Backend staging resource (not yet deployed)
+
+Coolify application instantly-be-stg (jthngbojcvlwhjhjmnslvy46) uses the private
+ofaladag/instantly-be repository's main branch, Dockerfile build pack, APP-01,
+and https://api.stg.anonly.live. Read-only GitHub deploy key installed.
+Dedicated database instantly and non-superuser owner instantly created on DATA;
+PostGIS pre-enabled by the database administrator. Existing postgres DB preserved.
+Database, Redis, S3 and generated JWT credentials are configured runtime-only.
+GOOGLE_CLIENT_IDS remains required before starting; external auth/moderation/push
+settings await owner input. No deployment/migration or main-push webhook enabled.

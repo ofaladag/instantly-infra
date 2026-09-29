@@ -1,3 +1,6 @@
+# Egress policy: unrestricted. Intentionally omit all outbound rules on both
+# Hetzner firewalls: no outbound rules means all outbound traffic is allowed.
+# Keep inbound filtering independent of this policy.
 resource "hcloud_firewall" "app" {
   name   = "${local.name_prefix}-app-public"
   labels = local.labels

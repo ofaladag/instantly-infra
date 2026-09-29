@@ -154,3 +154,15 @@ and the Dockerfile-fix push were delivered successfully; the push queued commit
 1057917 in Coolify. Only the exact POST webhook path is public; Coolify validates
 the signing secret. An unsigned push request was rejected. Admin routes remain
 on the private HTTPS entrypoint. Webhook routing is mirrored in services/proxy.
+
+## Unrestricted outbound traffic
+
+Owner policy: do not restrict server/application egress. Live Hetzner APP and
+DATA firewalls have no outbound rules (allow all); host OUTPUT policies accept.
+DATA uses APP NAT without destination/port restrictions. Docker's bridge ingress
+protection and DATA inbound database/SSH rules remain in place. No firewall
+mutation was needed. APP TCP connections to OpenAI 443, APNs 443/2197 and FCM 443
+passed; DATA HTTPS to object storage returned 200. Backend-container OpenAI
+HTTPS returned 401 without credentials, confirming connectivity. Provider-level
+restrictions (such as Hetzner's default SMTP 25/465 blocks) are separate from
+these firewall settings and were not changed.

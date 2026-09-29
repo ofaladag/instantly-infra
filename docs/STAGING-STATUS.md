@@ -110,5 +110,26 @@ after provisioning. Peer state and credentials survive in the named volume.
 
 Verified: DNS internal records over UDP/TCP, forwarding for public names, DATA
 DNS access, wg-easy-to-DATA TCP5432/6379 access, UI login and profile export.
-Actual device import, VPN handshake and end-to-end client checks are pending.
+Device import and VPN handshake were verified. Mac system DNS, private panel
+access, PostgreSQL TCP access and passwordless Redis PONG passed; public internet
+routes remain on the normal network interface.
 No off-host backup for WireGuard's persistent volume is configured yet.
+
+## Private HTTPS
+
+Coolify and wg-easy now serve valid Let's Encrypt HTTPS on their existing
+internal hostnames without port suffixes. Mac TLS trust/hostname verification
+and both login pages passed (HTTP 200). Private HTTP redirects to HTTPS.
+Public-IP requests using either internal Host/SNI returned 503, not a panel.
+
+The Coolify-managed APP proxy binds public 80/443 to 188.245.26.177 and private
+80/443 to 10.20.0.20 with separate internal entrypoints. Realtime and terminal
+WebSocket routes are included; interactive authenticated terminal use was not
+verified in this check. Existing direct private HTTP ports remain for recovery.
+
+Cloudflare DNS-01 token is stored only on APP in a mode-0600 secret file, not
+in the committed proxy configuration. ACME account/certificates persist in
+acme-internal.json and Traefik manages renewal. Initial validation hit cached
+NXDOMAIN from Quad9; using 1.1.1.1 for ACME resolved issuance. Configuration is
+mirrored under services/proxy and saved in Coolify's proxy configuration store.
+Public API HTTPS will be configured when its application resource is deployed.

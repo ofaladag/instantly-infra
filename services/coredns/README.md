@@ -9,8 +9,8 @@ The local system resolver at 127.0.0.53 is unchanged. Unknown internal names
 return NXDOMAIN; other zones forward to 1.1.1.1 and 9.9.9.9.
 
 The internal hosts map Coolify/wg-easy to APP and PostgreSQL/Redis to DATA.
-DNS does not supply ports or configure HTTPS/reverse proxies. Access Coolify on
-port 8000, wg-easy on 51821, PostgreSQL on 5432 and Redis on 6379.
+DNS does not supply ports. The private HTTPS proxy now serves Coolify and
+wg-easy on port 443 (see services/proxy). PostgreSQL uses 5432 and Redis 6379.
 
 After editing, copy the files to the same host directory. CoreDNS reloads the
 Corefile and hosts plugin data. Keep .example files as environment templates;

@@ -1,0 +1,47 @@
+http:
+  routers:
+    coolify-internal:
+      entryPoints:
+      - internal-https
+      rule: Host(`coolify.internal.stg.anonly.live`)
+      service: coolify-internal
+      tls:
+        certResolver: internal
+    wireguard-internal:
+      entryPoints:
+      - internal-https
+      rule: Host(`wg.internal.stg.anonly.live`)
+      service: wireguard-internal
+      tls:
+        certResolver: internal
+    realtime-internal:
+      entryPoints:
+      - internal-https
+      rule: Host(`coolify.internal.stg.anonly.live`) && PathPrefix(`/app`)
+      service: realtime-internal
+      tls:
+        certResolver: internal
+    terminal-internal:
+      entryPoints:
+      - internal-https
+      rule: Host(`coolify.internal.stg.anonly.live`) && PathPrefix(`/terminal/ws`)
+      service: terminal-internal
+      tls:
+        certResolver: internal
+  services:
+    coolify-internal:
+      loadBalancer:
+        servers:
+        - url: http://coolify:8080
+    wireguard-internal:
+      loadBalancer:
+        servers:
+        - url: http://10.20.0.20:51821
+    realtime-internal:
+      loadBalancer:
+        servers:
+        - url: http://coolify-realtime:6001
+    terminal-internal:
+      loadBalancer:
+        servers:
+        - url: http://coolify-realtime:6002

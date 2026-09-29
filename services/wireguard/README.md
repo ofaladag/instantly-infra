@@ -42,9 +42,9 @@ Open the admin tunnel with:
 ssh -N -L 51821:127.0.0.1:51821 root@188.245.26.177
 ```
 
-Then visit http://127.0.0.1:51821. The private DNS name
-wg.internal.stg.anonly.live also resolves to APP; specify port 51821.
-Coolify's private DNS name similarly requires port 8000 until an internal
-reverse proxy is explicitly configured.
+Then visit http://127.0.0.1:51821 for recovery access. Normal VPN access uses
+https://wg.internal.stg.anonly.live through the private proxy, without a port
+suffix. Coolify likewise uses https://coolify.internal.stg.anonly.live.
+See services/proxy for HTTPS configuration and renewal.
 
 Source: https://wg-easy.github.io/wg-easy/latest/advanced/config/unattended-setup/

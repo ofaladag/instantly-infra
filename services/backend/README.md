@@ -45,3 +45,12 @@ check, not an application startup, migration or integration test.
 Runtime verification: HTTPS /actuator/health returned UP (200), welcome returned
 200, all 28 migrations applied with no held lock, and S3 HeadBucket returned 200.
 OAuth login, real moderation and push delivery still need application-level tests.
+
+APNs IPv6 routing fix: APP has no public IPv6 default route, although Docker
+assigns private IPv6 addresses. An APNs connection selected an AAAA record and
+failed with Network is unreachable. Backend JAVA_TOOL_OPTIONS now includes
+-Djava.net.preferIPv4Stack=true (runtime-only); existing memory options retained.
+IPv4 APNs HTTPS returned 405, confirming transport reachability; IPv6 failed.
+This is an application address-family setting, not an outbound firewall block.
+Revisit it if routed public IPv6 is introduced. Actual push delivery needs a
+valid device notification retry; a transport check does not verify delivery.

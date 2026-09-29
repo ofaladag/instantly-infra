@@ -166,3 +166,12 @@ passed; DATA HTTPS to object storage returned 200. Backend-container OpenAI
 HTTPS returned 401 without credentials, confirming connectivity. Provider-level
 restrictions (such as Hetzner's default SMTP 25/465 blocks) are separate from
 these firewall settings and were not changed.
+
+APNs IPv6 routing fix: APP has no public IPv6 default route, although Docker
+assigns private IPv6 addresses. An APNs connection selected an AAAA record and
+failed with Network is unreachable. Backend JAVA_TOOL_OPTIONS now includes
+-Djava.net.preferIPv4Stack=true (runtime-only); existing memory options retained.
+IPv4 APNs HTTPS returned 405, confirming transport reachability; IPv6 failed.
+This is an application address-family setting, not an outbound firewall block.
+Revisit it if routed public IPv6 is introduced. Actual push delivery needs a
+valid device notification retry; a transport check does not verify delivery.

@@ -19,21 +19,29 @@ The repository-specific read-only GitHub deploy key is registered with GitHub
 and stored as an encrypted Coolify private key. Its local recovery copy is in
 ignored work/credentials/. Generated database/JWT secrets also stay there.
 
-## Pending before first deployment
+## Runtime variables and deployment
 
-GOOGLE_CLIENT_IDS is mandatory: the application refuses an empty audience list.
-Obtain the real Google OAuth client IDs from the application owner. No placeholder
-client ID is configured. APPLE_CLIENT_IDS is needed for Apple login.
-OPENAI_API_KEY is needed for moderation; without it work remains queued/retried.
-APNS_ENABLED and FCM_ENABLED are currently false pending actual push credentials.
-Import any provided application secrets through Coolify; never commit them.
+Owner-provided Google/Apple, OpenAI and push configuration is stored in Coolify.
+All application variables are runtime-only. Keep build-time flags off for these
+credentials. APNS/FCM behavior follows the owner's configured enable flags.
 
-Automatic main push deployment has not been connected yet. The Coolify UI is
-VPN-only, so a GitHub webhook requires an explicitly limited, authenticated public
-webhook route or a runner with VPN access. Do not expose the admin panel to solve it.
+Main pushes trigger Coolify via GitHub webhook 688801259. The only public
+Coolify route is POST /webhooks/source/github/events/manual on api.stg.anonly.live;
+the handler checks the per-application HMAC secret before queuing deployments.
+Admin pages remain on private entrypoints. GitHub ping/push delivery returned 200;
+an unsigned push request was rejected. See services/proxy/backend-webhook.yaml.
+
+The initial deployment ran all 28 Liquibase migrations and started Spring Boot,
+but the runtime image lacked curl/wget for Coolify's health check. Backend commit
+1057917 adds curl to the runtime stage. Its main push automatically queued the
+corrected deployment. No health check was disabled to bypass this issue.
 
 Initial inspected commit: e21548b132a7da677844b87fc8bcbee662a8a0cc.
 
 Docker build verification passed on APP-01 for the inspected commit, using the
 repository Dockerfile unchanged. Its Maven command skips tests; this was a build
 check, not an application startup, migration or integration test.
+
+Runtime verification: HTTPS /actuator/health returned UP (200), welcome returned
+200, all 28 migrations applied with no held lock, and S3 HeadBucket returned 200.
+OAuth login, real moderation and push delivery still need application-level tests.

@@ -1,0 +1,11 @@
+http:
+  routers:
+    instantly-github-webhook:
+      entryPoints:
+      - https
+      rule: Host(`api.stg.anonly.live`) && Path(`/webhooks/source/github/events/manual`)
+        && Method(`POST`)
+      priority: 1000
+      service: coolify-internal@file
+      tls:
+        certResolver: letsencrypt

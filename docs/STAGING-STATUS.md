@@ -134,13 +134,23 @@ NXDOMAIN from Quad9; using 1.1.1.1 for ACME resolved issuance. Configuration is
 mirrored under services/proxy and saved in Coolify's proxy configuration store.
 Public API HTTPS will be configured when its application resource is deployed.
 
-## Backend staging resource (not yet deployed)
+## Backend staging deployment
 
-Coolify application instantly-be-stg (jthngbojcvlwhjhjmnslvy46) uses the private
-ofaladag/instantly-be repository's main branch, Dockerfile build pack, APP-01,
-and https://api.stg.anonly.live. Read-only GitHub deploy key installed.
-Dedicated database instantly and non-superuser owner instantly created on DATA;
-PostGIS pre-enabled by the database administrator. Existing postgres DB preserved.
-Database, Redis, S3 and generated JWT credentials are configured runtime-only.
-GOOGLE_CLIENT_IDS remains required before starting; external auth/moderation/push
-settings await owner input. No deployment/migration or main-push webhook enabled.
+Coolify application instantly-be-stg (jthngbojcvlwhjhjmnslvy46) deploys the private
+ofaladag/instantly-be repository's main branch through its Dockerfile on APP-01.
+Public HTTPS: https://api.stg.anonly.live. Read-only deploy key installed.
+Dedicated database instantly and non-superuser owner instantly are on DATA;
+PostGIS is enabled. Existing postgres DB was preserved. Database, Redis, S3, JWT
+and owner-provided integration credentials are configured runtime-only.
+
+Liquibase applied 28 changesets and released its migration lock. Backend commit
+1057917 adds curl to the runtime image for Coolify's container health check.
+HTTPS /actuator/health returns UP (200) and /api/v1/welcome returns 200.
+S3 HeadBucket using the application's configured credentials returned 200.
+Real OAuth logins, moderation requests and device push delivery were not tested.
+
+GitHub webhook 688801259 connects main pushes to staging deployments. Both ping
+and the Dockerfile-fix push were delivered successfully; the push queued commit
+1057917 in Coolify. Only the exact POST webhook path is public; Coolify validates
+the signing secret. An unsigned push request was rejected. Admin routes remain
+on the private HTTPS entrypoint. Webhook routing is mirrored in services/proxy.

@@ -39,5 +39,8 @@ Existing direct private/SSH HTTP ports remain available for recovery.
 Do not populate public-entrypoint Coolify instance-domain/service-domain routers
 for these admin names without also preserving the private routing boundary.
 
-The future public API resource must be configured with https://api.stg.anonly.live
-in Coolify when deployed; it is not deployed by this proxy configuration.
+The public API application is configured with https://api.stg.anonly.live in
+Coolify. Copy backend-webhook.yaml into the proxy dynamic directory as well. It
+adds only the exact POST GitHub webhook path on the public HTTPS entrypoint; the
+Coolify handler validates a per-application HMAC secret. Never broaden this route
+to expose the Coolify UI or general API.

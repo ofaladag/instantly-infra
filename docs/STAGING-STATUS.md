@@ -10,12 +10,16 @@
 - Official Coolify installer run on APP; deployed version 4.3.23.
 - APP Docker address pool: 172.20.0.0/16, /24 networks, avoiding private/VPN CIDRs.
 - DATA daemon configuration prepared for 172.21.0.0/16, /24 networks and MTU 1450;
-  Docker installation remains part of Coolify server validation.
+  Docker 29.8.1 is now installed and active; Coolify network is 172.21.1.0/24.
+- DATA coolify-proxy and coolify-sentinel containers are healthy. Host firewall
+  and route units remain active, and outbound HTTPS still works.
+- DATA /data/instantly/postgres and /data/instantly/redis directories exist on
+  the root disk; approximately 34 GB free at this check.
 - Coolify HTTP endpoint returns 302 through a local SSH tunnel on 127.0.0.1:8000.
 
-Next: owner creates initial administrator at http://127.0.0.1:8000, then add DATA
-using its dedicated SSH key and private IP, deploy CoreDNS/wg-easy, databases and
-application resources through Coolify. No application database or VPN is running yet.
+Owner created the administrator and added DATA via its private IP and dedicated
+SSH key. The instantly project and stg environment are prepared. Next: deploy
+CoreDNS/wg-easy, databases and application resources through Coolify. No application database or VPN is running yet.
 The PostgreSQL/Redis containers on APP are Coolify's own internal dependencies.
 
 To reopen the local tunnel if needed:
@@ -24,5 +28,51 @@ To reopen the local tunnel if needed:
 ssh -N -L 127.0.0.1:8000:127.0.0.1:8000 root@188.245.26.177
 ```
 
-Initial root registration must be completed by the owner. No credentials were
-created for that account by the agent. The public firewall does not expose port 8000.
+Initial administrator registration was completed by the owner. No credentials
+were created for that account by the agent. The public firewall does not expose port 8000.
+
+## Selected application database images
+
+Owner selected `postgis/postgis:17-3.5-alpine` and `redis:7.2`.
+Both are intended as standalone Coolify database resources on DATA-01, in
+project `instantly`, environment `stg`. PostGIS is now deployed and healthy; Redis deployment is still pending.
+
+Persistent directory mappings before first start:
+- PostGIS: /data/instantly/postgres → /var/lib/postgresql/data
+- Redis: /data/instantly/redis → /data
+
+Use one mount per container data path; avoid duplicate named-volume and bind
+mounts at the same destination. Keep generated credentials inside Coolify.
+Cross-server APP connectivity needs explicit private host port mapping/proxy
+configuration; container Internal URLs are limited to their Docker network.
+Do not enable public Internet access. Verify PostGIS extension availability in
+the application's database after startup. Redis persistence/eviction policy
+must be selected according to cache versus durable queue/state use.
+
+## PostGIS private access verified
+
+Coolify resource gjskeqvy7nhwmayukgni0oaz on DATA-01 uses
+postgis/postgis:17-3.5-alpine, with PostGIS 3.5.7 enabled in the postgres database.
+It retains the Coolify named volume postgres-data-gjskeqvy7nhwmayukgni0oaz at
+/var/lib/postgresql/data (root-disk storage, no extra Hetzner volume).
+The earlier directory-bind mapping was a proposal; the deployed named volume is
+retained and should not be replaced with an empty bind directory.
+
+Saved ports_mappings=10.20.0.30:5432:5432 through the Coolify model and redeployed
+using Coolify's StartDatabase action. Runtime binding verified on private IP only;
+Make it publicly available remains false. APP's container network successfully
+ran pg_isready against 10.20.0.30:5432. PostgreSQL reports healthy.
+
+## Private-network PostgreSQL access policy
+
+PostgreSQL TCP 5432 now accepts clients arriving on DATA's private interface
+from the entire staging Hetzner network 10.20.0.0/16. Docker DNAT ingress and
+host input use matching source-CIDR rules. The database still binds exclusively
+to 10.20.0.30:5432. SSH/Redis rules remain APP-only. Database authentication is
+still required. APP-to-DATA readiness passed after applying the firewall.
+
+The persistent host firewall script and repository template were updated. DATA
+cloud-init user_data now has ignore_changes: subsequent first-boot template
+edits require explicit application to running hosts, avoiding server replacement.
+Future VPN peers masqueraded as APP would share APP access; no VPN is deployed
+at this point. This rule is network-source control, not an identity boundary.

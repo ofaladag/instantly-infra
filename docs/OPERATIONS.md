@@ -64,7 +64,8 @@ old starter state or apply the original generated repository again.
    Keep their management interfaces private. Use Cloudflare DNS-01 for internal
    TLS certificates; keep a scoped ACME token in Coolify secrets.
 10. Create PostgreSQL and Redis on DATA. Bind published ports to 10.20.0.30 only;
-    allow 5432/6379. If Coolify uses a port proxy, verify its bindings and reachability.
+    allow 5432/6379. PostgreSQL permits the entire staging private network
+    (10.20.0.0/16); Redis and SSH remain restricted to APP. If Coolify uses a port proxy, verify its bindings and reachability.
     Bind-mount database data into /data/instantly/postgres and /data/instantly/redis,
     using the engine/image-specific container data path and ownership. Confirm
     the container uses the configured bind path before writing real data. In prod
@@ -89,7 +90,8 @@ Back up Coolify's own configuration, SSH keys and encryption key separately.
   works through APP. Check downloads and container pulls, not just ping.
 - From untrusted internet, only intended public HTTP(S)/WireGuard are reachable;
   SSH works only from admin CIDRs; DNS, DBs and admin ports are closed.
-- DATA accepts SSH/5432/6379 from APP and rejects other private sources, including
+- DATA accepts PostgreSQL 5432 from the private-network CIDR and SSH/Redis
+  from APP only, rejecting other sources, including
   Docker-published ports. Inspect `nft list table inet instantly_data`.
 - Reboot each server and restart Docker: DATA route/firewall return, APP NAT
   still works. In prod also check the volume mount and missing-volume behavior:
@@ -103,7 +105,8 @@ Back up Coolify's own configuration, SSH keys and encryption key separately.
 The initial backend is local. Store state securely and move to an encrypted,
 access-controlled remote backend with locking before collaborative production
 changes. Never commit state or .terraform/. Commit .terraform.lock.hcl.
-User-data is first-boot only. Editing it can require a protected replacement;
+User-data is first-boot only. DATA ignores user_data changes in Terraform; apply
+updated templates explicitly to running DATA hosts. APP edits can require a protected replacement;
 review plans and migrate data before changing protection. No provisioners or
 Terraform runtime service resources are used. Both servers and the production data volume
 have API deletion protection and Terraform prevent_destroy. Removing resources

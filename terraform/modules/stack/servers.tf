@@ -60,10 +60,15 @@ resource "hcloud_server" "data" {
     ssh_authorized_keys = [var.coolify_ssh_public_key]
     write_files = [
       { path = "/usr/local/sbin/instantly-bootstrap", permissions = "0700", content = templatefile("${path.module}/../../../cloud-init/data.sh.tftpl", { gateway = local.network_gateway, app_ip = local.app_private_ip, volume_id = try(hcloud_volume.data[0].id, ""), use_data_volume = var.use_data_volume }) },
-      { path = "/usr/local/sbin/instantly-data-firewall", permissions = "0700", content = templatefile("${path.module}/../../../cloud-init/data-firewall.sh.tftpl", { app_ip = local.app_private_ip }) }
+      { path = "/usr/local/sbin/instantly-data-firewall", permissions = "0700", content = templatefile("${path.module}/../../../cloud-init/data-firewall.sh.tftpl", { app_ip = local.app_private_ip, network_cidr = local.network_cidr }) }
     ]
     runcmd = [["/usr/local/sbin/instantly-bootstrap"]]
   })}"
   depends_on = [hcloud_network_subnet.private, hcloud_network_route.egress]
-  lifecycle { prevent_destroy = true }
+  lifecycle {
+    prevent_destroy = true
+    # cloud-init is first-boot only. Apply template changes explicitly to existing
+    # DATA hosts; do not replace a database server to change its firewall.
+    ignore_changes = [user_data]
+  }
 }

@@ -74,8 +74,7 @@ still required. APP-to-DATA readiness passed after applying the firewall.
 The persistent host firewall script and repository template were updated. DATA
 cloud-init user_data now has ignore_changes: subsequent first-boot template
 edits require explicit application to running hosts, avoiding server replacement.
-Future VPN peers masqueraded as APP would share APP access; no VPN is deployed
-at this point. This rule is network-source control, not an identity boundary.
+VPN peers masqueraded as APP share APP access. This rule is network-source control, not an identity boundary.
 
 ## Redis queue configuration
 
@@ -93,3 +92,23 @@ The existing /data named volume is retained. Runtime configuration, healthy
 container state, AOF write status and passwordless PONG from APP were verified.
 AOF everysec can lose roughly the last second of writes on a crash; it does not
 replace off-host backups. No destructive persistence test was performed.
+
+## VPN and internal DNS
+
+Coolify service instantly-stg-coredns (qtg3t3tarw5uf8pbzwnvv60l) runs
+CoreDNS 1.14.7 on APP, bound to 10.20.0.20:53 UDP/TCP.
+Coolify service instantly-stg-wireguard (wfmejlbqaould1md0fuczef3) runs
+wg-easy 15.4.0, public UDP 51820 and private/loopback admin TCP 51821.
+Both images are digest-pinned in services/. WireGuard kernel module loading
+is persisted on APP. These are runtime services, not new Terraform resources.
+
+WireGuard interface 10.8.0.1/24 is up. A faruk-macbook peer was created through
+the authenticated wg-easy API and exported to ignored local credentials.
+Profile endpoint, split routes and DNS were checked without displaying keys.
+The initial administrator password was removed from Coolify environment/Compose
+after provisioning. Peer state and credentials survive in the named volume.
+
+Verified: DNS internal records over UDP/TCP, forwarding for public names, DATA
+DNS access, wg-easy-to-DATA TCP5432/6379 access, UI login and profile export.
+Actual device import, VPN handshake and end-to-end client checks are pending.
+No off-host backup for WireGuard's persistent volume is configured yet.

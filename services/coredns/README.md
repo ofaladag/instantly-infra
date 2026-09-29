@@ -1,13 +1,20 @@
-# CoreDNS (Coolify owned)
-Deploy on APP-01 through Coolify only after bootstrap. Copy `Corefile.example`
-and `internal.hosts.example` to files mounted by your Coolify Compose resource;
-replace example.com using `terraform output -raw internal_dns_hosts`.
-Choose and pin a tested CoreDNS image digest in Coolify before deployment.
-Bind both UDP/TCP 53 to **10.20.0.20**, never 0.0.0.0. The system resolver on
-127.0.0.53 remains available. No public DNS record for internal names is needed.
+# Staging CoreDNS (Coolify)
 
-VPN clients use 10.20.0.20 as DNS. APP containers can use it explicitly once
-CoreDNS is healthy; do not make initial host bootstrap depend on this container.
+Deploy docker-compose.yml as a Coolify service on APP-01. The image is pinned
+by version and digest. Before deployment copy Corefile and internal.hosts to
+/data/instantly/coredns/ on APP; this directory is mounted read-only.
 
-These examples target stg. For prod use the environment outputs and address/DNS
-map in the repository README; do not reuse staging peer configs or persistent state.
+DNS listens on 10.20.0.20:53 over UDP and TCP, not the public address.
+The local system resolver at 127.0.0.53 is unchanged. Unknown internal names
+return NXDOMAIN; other zones forward to 1.1.1.1 and 9.9.9.9.
+
+The internal hosts map Coolify/wg-easy to APP and PostgreSQL/Redis to DATA.
+DNS does not supply ports or configure HTTPS/reverse proxies. Access Coolify on
+port 8000, wg-easy on 51821, PostgreSQL on 5432 and Redis on 6379.
+
+After editing, copy the files to the same host directory. CoreDNS reloads the
+Corefile and hosts plugin data. Keep .example files as environment templates;
+these concrete files are staging-specific and must be adapted for production.
+
+Verified UDP/TCP queries from APP, UDP from DATA, plus public-name forwarding.
+Bootstrap/package DNS is independent of this runtime service.

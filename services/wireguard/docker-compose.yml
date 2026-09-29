@@ -1,0 +1,20 @@
+services:
+  wg-easy:
+    image: ghcr.io/wg-easy/wg-easy:15.4.0@sha256:0e7bc9d34e86ddcaa92bc700d4d7dc9b33291dbc07ac8d13382f7c2095f949ec
+    restart: unless-stopped
+    environment:
+      INSECURE: "true"
+      DISABLE_IPV6: "true"
+    ports:
+      - "188.245.26.177:51820:51820/udp"
+      - "127.0.0.1:51821:51821/tcp"
+      - "10.20.0.20:51821:51821/tcp"
+    volumes:
+      - wireguard:/etc/wireguard
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      net.ipv4.ip_forward: "1"
+      net.ipv4.conf.all.src_valid_mark: "1"
+volumes:
+  wireguard:

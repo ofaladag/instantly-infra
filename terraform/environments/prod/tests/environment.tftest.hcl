@@ -24,4 +24,8 @@ run "root_wiring" {
     condition     = output.deployment.environment == "prod" && output.deployment.name_prefix == "instantly-prod" && output.vpn.endpoint == "vpn.example.com:51820"
     error_message = "Root must deploy only its fixed environment and DNS namespace."
   }
+  assert {
+    condition     = output.storage.mode == "volume" && output.deployment.app_server_type == "cx33" && output.deployment.data_server_type == "cx33"
+    error_message = "Environment machine size and storage policy must match the intended defaults."
+  }
 }

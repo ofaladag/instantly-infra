@@ -41,7 +41,7 @@ run "architecture" {
     error_message = "Private DATA needs an APP egress route."
   }
   assert {
-    condition     = hcloud_volume.data.delete_protection && hcloud_server.data.delete_protection && hcloud_server.app.delete_protection
+    condition     = hcloud_volume.data[0].delete_protection && hcloud_server.data.delete_protection && hcloud_server.app.delete_protection
     error_message = "Persistent infrastructure must retain API deletion protection."
   }
   assert {

@@ -44,6 +44,7 @@ WantedBy=multi-user.target
 UNIT
 systemctl daemon-reload
 systemctl enable --now instantly-data-firewall.service
+%{ if use_data_volume ~}
 # Volume attaches after server creation. Never format an existing device here.
 device=/dev/disk/by-id/scsi-0HC_Volume_${volume_id}
 for attempt in $(seq 1 120); do
@@ -65,15 +66,20 @@ Options=defaults,noatime
 [Install]
 WantedBy=multi-user.target
 UNIT
+%{ endif ~}
 mkdir -p /etc/systemd/system/docker.service.d
 cat > /etc/systemd/system/docker.service.d/20-instantly-data.conf <<'UNIT'
 [Unit]
 Requires=instantly-route.service instantly-data-firewall.service
 After=instantly-route.service instantly-data-firewall.service
+%{ if use_data_volume ~}
 RequiresMountsFor=/data/instantly
+%{ endif ~}
 UNIT
 systemctl daemon-reload
+%{ if use_data_volume ~}
 systemctl enable --now data-instantly.mount
+%{ endif ~}
 install -d -m 0750 /data/instantly/postgres /data/instantly/redis /data/instantly/backups
 # Coolify installs Docker while validating this server. No databases are created here.
 touch /var/lib/instantly-bootstrap-complete

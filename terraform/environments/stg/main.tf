@@ -1,4 +1,5 @@
 module "infra" {
+  use_data_volume        = false
   source                 = "../../modules/stack"
   environment            = "stg"
   project                = var.project

@@ -5,6 +5,8 @@ refer to staging. `domain` is the base Cloudflare zone; staging adds `.stg` to
 service names automatically. Production lives in `terraform/environments/prod`
 and must be initialized/planned separately. Use the README environment table and
 Terraform outputs for its 10.30.x.x addresses, 10.9.x.x VPN and production DNS.
+Staging uses CX23 for both hosts and has no attached volume. Its database
+directories are on DATA-01 root disk. Prod keeps the separate retained volume.
 Each root has a separate local backend/state and provider lock file. Do not use
 Terraform workspaces to switch these environments. Do not run apply in the module.
 Before using prod, provide its own keys/inputs and plan its separate infrastructure.
@@ -32,7 +34,7 @@ old starter state or apply the original generated repository again.
    `/var/log/cloud-init-output.log` and `/var/lib/instantly-bootstrap-complete`.
    Reach DATA via the output SSH jump command. Initial DATA apt retries wait for
    APP NAT. A failed bootstrap can be rerun with `/usr/local/sbin/instantly-bootstrap`
-   after fixing the cause. Check route/NAT/firewall/mount units before continuing.
+   after fixing the cause. Check route/NAT/firewall units (and the mount unit in prod) before continuing.
 6. If install_coolify=true was set before initial apply, the official installer
    ran on APP. Otherwise review https://cdn.coollabs.io/coolify/install.sh on APP,
    download it to a file and run it as root. The installer installs Docker.
@@ -57,8 +59,9 @@ old starter state or apply the original generated repository again.
     allow 5432/6379. If Coolify uses a port proxy, verify its bindings and reachability.
     Bind-mount database data into /data/instantly/postgres and /data/instantly/redis,
     using the engine/image-specific container data path and ownership. Confirm
-    the container actually uses the attached volume before writing real data.
-    Docker cannot start without that mount. Coolify metadata/Docker image layers
+    the container uses the configured bind path before writing real data. In prod
+    this path is on the attached volume and Docker cannot start without its mount.
+    In stg the same path is on the root disk; no volume mount unit is installed. Coolify metadata/Docker image layers
     remain on the root disk; the volume is not automatically used by named volumes.
 11. Connect application repositories and add secrets in Coolify. Deploy apps on
     APP using the public API hostname. Enable TLS in Coolify before serving traffic.
@@ -80,8 +83,9 @@ Back up Coolify's own configuration, SSH keys and encryption key separately.
   SSH works only from admin CIDRs; DNS, DBs and admin ports are closed.
 - DATA accepts SSH/5432/6379 from APP and rejects other private sources, including
   Docker-published ports. Inspect `nft list table inet instantly_data`.
-- Reboot each server and restart Docker: DATA mount/route/firewall return, APP NAT
-  still works. Check missing-volume behavior: Docker must fail closed.
+- Reboot each server and restart Docker: DATA route/firewall return, APP NAT
+  still works. In prod also check the volume mount and missing-volume behavior:
+  Docker must fail closed. Staging has no external volume dependency.
 - VPN resolves internal names and reaches authorized services; client public
   egress IP is unchanged. Verify a real peer uses split-tunnel AllowedIPs.
 - Insert database test data, redeploy its container and verify persistence;
@@ -93,9 +97,12 @@ access-controlled remote backend with locking before collaborative production
 changes. Never commit state or .terraform/. Commit .terraform.lock.hcl.
 User-data is first-boot only. Editing it can require a protected replacement;
 review plans and migrate data before changing protection. No provisioners or
-Terraform runtime service resources are used. Both servers and the data volume
+Terraform runtime service resources are used. Both servers and the production data volume
 have API deletion protection and Terraform prevent_destroy. Removing resources
 from configuration also removes lifecycle guards, so API protection matters.
+Switching storage mode is not a data migration. Do not toggle an existing prod
+volume off; deletion protection will block it. Staging root-disk data does not
+survive server deletion/rebuild; recover it from off-host backups.
 Volume shrink is unsupported. Test recovery before removing any protection.
 
 # Boundaries and sources

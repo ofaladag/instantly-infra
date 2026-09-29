@@ -16,7 +16,12 @@ output "data_ssh" {
   value = "ssh -J root@${hcloud_server.app.ipv4_address} root@${local.data_private_ip}"
 }
 output "storage" {
-  value = { id = hcloud_volume.data.id, device = "/dev/disk/by-id/scsi-0HC_Volume_${hcloud_volume.data.id}", mount = "/data/instantly" }
+  value = {
+    mode   = var.use_data_volume ? "volume" : "root_disk"
+    id     = try(hcloud_volume.data[0].id, null)
+    device = var.use_data_volume ? "/dev/disk/by-id/scsi-0HC_Volume_${hcloud_volume.data[0].id}" : null
+    mount  = "/data/instantly"
+  }
 }
 output "internal_dns_hosts" {
   value = <<-HOSTS
@@ -27,11 +32,13 @@ output "internal_dns_hosts" {
 
 output "deployment" {
   value = {
-    environment  = var.environment
-    name_prefix  = local.name_prefix
-    dns_domain   = local.dns_domain
-    network_cidr = local.network_cidr
-    subnet_cidr  = local.subnet_cidr
-    vpn_cidr     = local.vpn_cidr
+    app_server_type  = var.app_server_type
+    data_server_type = var.data_server_type
+    environment      = var.environment
+    name_prefix      = local.name_prefix
+    dns_domain       = local.dns_domain
+    network_cidr     = local.network_cidr
+    subnet_cidr      = local.subnet_cidr
+    vpn_cidr         = local.vpn_cidr
   }
 }

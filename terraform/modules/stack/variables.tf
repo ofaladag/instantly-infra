@@ -103,3 +103,9 @@ variable "install_coolify" {
   type        = bool
   default     = false
 }
+
+variable "use_data_volume" {
+  description = "Use a separate retained DATA disk; false stores data on the server root disk."
+  type        = bool
+  default     = true
+}

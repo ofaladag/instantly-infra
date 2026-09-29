@@ -24,4 +24,8 @@ run "root_wiring" {
     condition     = output.deployment.environment == "stg" && output.deployment.name_prefix == "instantly-stg" && output.vpn.endpoint == "vpn.stg.example.com:51820"
     error_message = "Root must deploy only its fixed environment and DNS namespace."
   }
+  assert {
+    condition     = output.storage.mode == "root_disk" && output.deployment.app_server_type == "cx23" && output.deployment.data_server_type == "cx23"
+    error_message = "Environment machine size and storage policy must match the intended defaults."
+  }
 }

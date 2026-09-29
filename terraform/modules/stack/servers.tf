@@ -59,7 +59,7 @@ resource "hcloud_server" "data" {
     ssh_pwauth          = false
     ssh_authorized_keys = [var.coolify_ssh_public_key]
     write_files = [
-      { path = "/usr/local/sbin/instantly-bootstrap", permissions = "0700", content = templatefile("${path.module}/../../../cloud-init/data.sh.tftpl", { gateway = local.network_gateway, app_ip = local.app_private_ip, volume_id = hcloud_volume.data.id }) },
+      { path = "/usr/local/sbin/instantly-bootstrap", permissions = "0700", content = templatefile("${path.module}/../../../cloud-init/data.sh.tftpl", { gateway = local.network_gateway, app_ip = local.app_private_ip, volume_id = try(hcloud_volume.data[0].id, ""), use_data_volume = var.use_data_volume }) },
       { path = "/usr/local/sbin/instantly-data-firewall", permissions = "0700", content = templatefile("${path.module}/../../../cloud-init/data-firewall.sh.tftpl", { app_ip = local.app_private_ip }) }
     ]
     runcmd = [["/usr/local/sbin/instantly-bootstrap"]]

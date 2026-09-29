@@ -10,9 +10,9 @@ coolify_ssh_public_key = "ssh-ed25519 REPLACE_WITH_COOLIFY_PUBLIC_KEY"
 admin_ipv4_cidrs = ["203.0.113.10/32"] # Replace with your actual public IP.
 location = "fsn1"
 network_zone = "eu-central"
-app_server_type = "cx33"
-data_server_type = "cx33"
-data_volume_size_gb = 50
+app_server_type = "cx23"
+data_server_type = "cx23"
+# No additional volume in stg; data uses DATA-01 root disk.
 server_backups = true
 # Explicit opt-in: executes the current upstream Coolify install script at first boot.
 install_coolify = false

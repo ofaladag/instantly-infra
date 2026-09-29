@@ -16,9 +16,12 @@ been created for either environment.
 | Application DNS | `api.stg.<domain>` | `api.<domain>` |
 | VPN endpoint | `vpn.stg.<domain>` | `vpn.<domain>` |
 | Internal zone | `internal.stg.<domain>` | `internal.<domain>` |
+| Server type (APP / DATA) | CX23 / CX23 | CX33 / CX33 |
+| Database storage | DATA root disk | Separate 50 GB volume |
 | Local state | stg root's `terraform.tfstate` | prod root's `terraform.tfstate` |
 
-Each environment gets its own two servers, network, volume, keys and firewalls.
+Each environment gets its own two servers, network, keys and firewalls.
+Only prod gets a separate retained data volume.
 The shared module avoids infrastructure drift. The environment is fixed in each
 root, not selected by tfvars or Terraform workspaces. Run commands in the intended
 root; never copy state between them. Backend paths resolve relative to that root.
@@ -46,10 +49,13 @@ zone, not `stg.<domain>`), `cloudflare_zone_id`, administrator `ssh_public_keys`
 `coolify_ssh_public_key`, and `admin_ipv4_cidrs`. Credentials are read only from
 `HCLOUD_TOKEN` and `CLOUDFLARE_API_TOKEN`; private keys belong outside this repo.
 
-Defaults: Ubuntu 24.04, fsn1/eu-central, cx33 servers, 50 GB persistent data disk,
+Defaults: Ubuntu 24.04, fsn1/eu-central; stg uses CX23 servers and the DATA root
+disk, while prod uses CX33 servers and a separate 50 GB data volume;
 server backups enabled. Confirm availability and costs before apply. Set
 `install_coolify = true` before the initial apply for automatic installation;
-otherwise follow the manual installer step in the runbook. No secrets, real
+otherwise follow the manual installer step in the runbook. Staging data lives under `/data/instantly` on DATA-01 and is lost if that server
+is deleted/rebuilt. Off-host
+backups still apply. No secrets, real
 keys, account identifiers or domain choices have been invented.
 
 ## Layout and validation

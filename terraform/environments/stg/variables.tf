@@ -21,12 +21,12 @@ variable "network_zone" {
 variable "app_server_type" {
   description = "Available x86 Hetzner server type for APP-01; confirm regional availability."
   type        = string
-  default     = "cx33"
+  default     = "cx23"
 }
 variable "data_server_type" {
   description = "Available x86 Hetzner server type for DATA-01."
   type        = string
-  default     = "cx33"
+  default     = "cx23"
 }
 variable "ssh_public_keys" {
   description = "Named administrator PUBLIC SSH keys. Never supply private keys."
@@ -78,7 +78,7 @@ variable "public_app_subdomains" {
   }
 }
 variable "data_volume_size_gb" {
-  description = "Persistent ext4 database volume size; can grow but cannot shrink."
+  description = "Unused in staging (root disk). Module compatibility input for volume size."
   type        = number
   default     = 50
   validation {

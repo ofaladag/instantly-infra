@@ -5,7 +5,7 @@ wg-easy 15.4.0 image digest. WireGuard is provided by the host kernel; bootstrap
 loads `wireguard` and persists it in /etc/modules-load.d/wireguard.conf.
 The container needs NET_ADMIN but no SYS_MODULE or host module mount.
 
-Public UDP endpoint: vpn.stg.anonly.live:51820 (Cloudflare DNS-only).
+Public UDP endpoint: vpn.stg.instantlyhere.com:51820 (Cloudflare DNS-only).
 Admin HTTP: 127.0.0.1:51821 via SSH tunnel, or 10.20.0.20:51821 over VPN.
 There is no public admin proxy/domain. INSECURE enables HTTP inside these paths;
 SSH/WireGuard provides transport encryption. Do not expose this UI publicly.
@@ -13,7 +13,7 @@ SSH/WireGuard provides transport encryption. Do not expose this UI publicly.
 Client defaults stored in the persistent /etc/wireguard named volume:
 - IPv4 tunnel: 10.8.0.0/24; IPv6 disabled.
 - AllowedIPs: 10.20.0.0/24,10.8.0.0/24 (split tunnel).
-- DNS: 10.20.0.20; endpoint: vpn.stg.anonly.live:51820.
+- DNS: 10.20.0.20; endpoint: vpn.stg.instantlyhere.com:51820.
 - wg-easy default MTU 1420; lower to 1380 if client connectivity needs it.
 
 wg-easy masquerades VPN traffic onto its Docker network; Docker then
@@ -43,8 +43,8 @@ ssh -N -L 51821:127.0.0.1:51821 root@188.245.26.177
 ```
 
 Then visit http://127.0.0.1:51821 for recovery access. Normal VPN access uses
-https://wg.internal.stg.anonly.live through the private proxy, without a port
-suffix. Coolify likewise uses https://coolify.internal.stg.anonly.live.
+https://wg.internal.stg.instantlyhere.com through the private proxy, without a port
+suffix. Coolify likewise uses https://coolify.internal.stg.instantlyhere.com.
 See services/proxy for HTTPS configuration and renewal.
 
 Source: https://wg-easy.github.io/wg-easy/latest/advanced/config/unattended-setup/

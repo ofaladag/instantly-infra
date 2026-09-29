@@ -1,4 +1,4 @@
-internal.stg.anonly.live:53 {
+internal.stg.instantlyhere.com:53 {
     errors
     hosts /etc/coredns/internal.hosts {
         ttl 60

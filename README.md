@@ -1,8 +1,8 @@
 # Instantly infrastructure
 
 Canonical repository: `/Users/faruk/dev/workspace/instantly-infra`.
-Start with **stg**. Production is scaffolded for later; no cloud resources have
-been created for either environment.
+Staging is deployed; see docs/STAGING-STATUS.md for verified runtime status.
+Production is scaffolded for later.
 
 ## Environments
 
@@ -94,9 +94,7 @@ accidentally pasted into the wrong file. Terraform itself does not load `.env`.
 The existing root `.env` has been relocated to staging, preserving its contents.
 Local credential files are chmod 600, gitignored, and plaintext on disk.
 
-Cloudflare uses the same `anonly.live` zone for both environments. You can create
-separate Cloudflare tokens, but DNS edit permission scoped to that zone covers
-both environments' records; it is not restricted to the staging subdomains.
+Staging uses the `instantlyhere.com` Cloudflare zone. Production is unchanged.
 
 ## Staging application object storage
 

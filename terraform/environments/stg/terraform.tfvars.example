@@ -1,7 +1,7 @@
 # STG: copy to terraform.tfvars (gitignored); replace ALL placeholders.
 # Environment is fixed in main.tf; do not set an environment variable here.
 project = "instantly"
-domain = "example.com"
+domain = "instantlyhere.com"
 cloudflare_zone_id = "REPLACE_WITH_ZONE_ID"
 ssh_public_keys = {
   operator = "ssh-ed25519 REPLACE_WITH_ADMIN_PUBLIC_KEY"

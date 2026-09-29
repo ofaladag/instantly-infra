@@ -3,28 +3,28 @@ http:
     coolify-internal:
       entryPoints:
       - internal-https
-      rule: Host(`coolify.internal.stg.anonly.live`)
+      rule: Host(`coolify.internal.stg.instantlyhere.com`)
       service: coolify-internal
       tls:
         certResolver: internal
     wireguard-internal:
       entryPoints:
       - internal-https
-      rule: Host(`wg.internal.stg.anonly.live`)
+      rule: Host(`wg.internal.stg.instantlyhere.com`)
       service: wireguard-internal
       tls:
         certResolver: internal
     realtime-internal:
       entryPoints:
       - internal-https
-      rule: Host(`coolify.internal.stg.anonly.live`) && PathPrefix(`/app`)
+      rule: Host(`coolify.internal.stg.instantlyhere.com`) && PathPrefix(`/app`)
       service: realtime-internal
       tls:
         certResolver: internal
     terminal-internal:
       entryPoints:
       - internal-https
-      rule: Host(`coolify.internal.stg.anonly.live`) && PathPrefix(`/terminal/ws`)
+      rule: Host(`coolify.internal.stg.instantlyhere.com`) && PathPrefix(`/terminal/ws`)
       service: terminal-internal
       tls:
         certResolver: internal

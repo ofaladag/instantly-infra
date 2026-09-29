@@ -138,7 +138,7 @@ Public API HTTPS will be configured when its application resource is deployed.
 
 Coolify application instantly-be-stg (jthngbojcvlwhjhjmnslvy46) deploys the private
 ofaladag/instantly-be repository's main branch through its Dockerfile on APP-01.
-Public HTTPS: https://api.stg.anonly.live. Read-only deploy key installed.
+Public HTTPS: https://api.stg.instantlyhere.com. Read-only deploy key installed.
 Dedicated database instantly and non-superuser owner instantly are on DATA;
 PostGIS is enabled. Existing postgres DB was preserved. Database, Redis, S3, JWT
 and owner-provided integration credentials are configured runtime-only.
@@ -175,3 +175,9 @@ IPv4 APNs HTTPS returned 405, confirming transport reachability; IPv6 failed.
 This is an application address-family setting, not an outbound firewall block.
 Revisit it if routed public IPv6 is introduced. Actual push delivery needs a
 valid device notification retry; a transport check does not verify delivery.
+
+## Staging domain migration
+
+Primary staging domain is now instantlyhere.com. See [migration details](DOMAIN-MIGRATION.md)
+for current URLs and client profile updates.
+Earlier entries above describe the historical deployment.

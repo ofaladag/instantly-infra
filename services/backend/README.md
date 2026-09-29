@@ -3,7 +3,7 @@
 Source: git@github.com:ofaladag/instantly-be.git, branch main.
 Coolify application: instantly-be-stg, UUID jthngbojcvlwhjhjmnslvy46.
 Destination: APP-01, staging environment. Build pack: Dockerfile (Java 26).
-Domain: https://api.stg.anonly.live, container port 8080; no host port mapping.
+Domain: https://api.stg.instantlyhere.com, container port 8080; no host port mapping.
 Health check: /actuator/health, startup grace 120s, 20 retries.
 Container memory limit 1536M; JVM MaxRAMPercentage=65.0.
 
@@ -26,7 +26,7 @@ All application variables are runtime-only. Keep build-time flags off for these
 credentials. APNS/FCM behavior follows the owner's configured enable flags.
 
 Main pushes trigger Coolify via GitHub webhook 688801259. The only public
-Coolify route is POST /webhooks/source/github/events/manual on api.stg.anonly.live;
+Coolify route is POST /webhooks/source/github/events/manual on api.stg.instantlyhere.com;
 the handler checks the per-application HMAC secret before queuing deployments.
 Admin pages remain on private entrypoints. GitHub ping/push delivery returned 200;
 an unsigned push request was rejected. See services/proxy/backend-webhook.yaml.

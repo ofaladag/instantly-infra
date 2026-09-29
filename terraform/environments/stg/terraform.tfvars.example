@@ -8,7 +8,7 @@ ssh_public_keys = {
 }
 coolify_ssh_public_key = "ssh-ed25519 REPLACE_WITH_COOLIFY_PUBLIC_KEY"
 admin_ipv4_cidrs = ["203.0.113.10/32"] # Replace with your actual public IP.
-location = "fsn1"
+location = "nbg1"
 network_zone = "eu-central"
 app_server_type = "cx23"
 data_server_type = "cx23"

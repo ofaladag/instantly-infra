@@ -11,7 +11,7 @@ variable "project" {
 variable "location" {
   description = "Both servers and the data volume must share this Hetzner location."
   type        = string
-  default     = "fsn1"
+  default     = "nbg1"
 }
 variable "network_zone" {
   description = "Must match location."

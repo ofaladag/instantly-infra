@@ -16,6 +16,7 @@ been created for either environment.
 | Application DNS | `api.stg.<domain>` | `api.<domain>` |
 | VPN endpoint | `vpn.stg.<domain>` | `vpn.<domain>` |
 | Internal zone | `internal.stg.<domain>` | `internal.<domain>` |
+| Location | Nürnberg (`nbg1`) | Falkenstein (`fsn1`) |
 | Server type (APP / DATA) | CX23 / CX23 | CX33 / CX33 |
 | Database storage | DATA root disk | Separate 50 GB volume |
 | Local state | stg root's `terraform.tfstate` | prod root's `terraform.tfstate` |
@@ -49,8 +50,9 @@ zone, not `stg.<domain>`), `cloudflare_zone_id`, administrator `ssh_public_keys`
 `coolify_ssh_public_key`, and `admin_ipv4_cidrs`. Credentials are read only from
 `HCLOUD_TOKEN` and `CLOUDFLARE_API_TOKEN`; private keys belong outside this repo.
 
-Defaults: Ubuntu 24.04, fsn1/eu-central; stg uses CX23 servers and the DATA root
-disk, while prod uses CX33 servers and a separate 50 GB data volume;
+Defaults: Ubuntu 24.04, eu-central network zone; stg uses Nürnberg (nbg1),
+CX23 servers and the DATA root
+disk, while prod uses Falkenstein (fsn1), CX33 servers and a separate 50 GB data volume;
 server backups enabled. Confirm availability and costs before apply. Set
 `install_coolify = true` before the initial apply for automatic installation;
 otherwise follow the manual installer step in the runbook. Staging data lives under `/data/instantly` on DATA-01 and is lost if that server

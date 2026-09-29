@@ -10,6 +10,7 @@ mock_provider "hcloud" {
   }
 }
 mock_provider "cloudflare" {}
+mock_provider "minio" {}
 variables {
   domain                 = "example.com"
   cloudflare_zone_id     = "0123456789abcdef0123456789abcdef"
@@ -27,5 +28,9 @@ run "root_wiring" {
   assert {
     condition     = output.storage.mode == "root_disk" && output.deployment.app_server_type == "cx23" && output.deployment.data_server_type == "cx23"
     error_message = "Environment machine size and storage policy must match the intended defaults."
+  }
+  assert {
+    condition     = minio_s3_bucket.application.acl == "private" && !minio_s3_bucket.application.force_destroy && minio_s3_bucket.application.bucket == "anonly-instantly-stg-app" && output.application_object_storage.region == "nbg1"
+    error_message = "Staging application bucket must be private, retained and in Nuremberg."
   }
 }

@@ -22,11 +22,14 @@ old starter state or apply the original generated repository again.
 2. Generate a dedicated Coolify SSH key outside this repository, and supply only
    the public half in tfvars. Store its private half in Coolify later. Supply your
    administrator public key and current public /32 CIDR too.
-3. Set HCLOUD_TOKEN and CLOUDFLARE_API_TOKEN using your secret manager/session.
+3. Fill HCLOUD_TOKEN and CLOUDFLARE_API_TOKEN in the selected environment’s
+   gitignored .env. Hetzner tokens must come from the corresponding instantly-stg
+   or instantly-prod project. Use scripts/tf.sh stg <command> from the repo root
+   to load staging tokens; the helper clears inherited tokens first.
    Scope Cloudflare to DNS edit on the chosen zone. Never paste tokens into .tf
    files or command history. Copy terraform.tfvars.example to terraform.tfvars
    and replace every placeholder. Select available machine types and location.
-4. Run `terraform init`, `terraform fmt -check`, `terraform validate`, then
+4. With that environment’s credentials loaded, run `terraform init`, `terraform fmt -check`, `terraform validate`, then
    `terraform plan -out=changes.tfplan` inside terraform/environments/stg/. Inspect costs and
    replacements. Only then run `terraform apply changes.tfplan`. Plan and state
    are sensitive and gitignored. `apply` returning does not mean cloud-init ended.

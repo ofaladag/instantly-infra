@@ -17,3 +17,5 @@ server_backups = true
 # Explicit opt-in: executes the current upstream Coolify install script at first boot.
 install_coolify = false
 public_app_subdomains = ["api"]
+
+application_bucket_name = "anonly-instantly-stg-app"

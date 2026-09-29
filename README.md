@@ -26,7 +26,9 @@ Only prod gets a separate retained data volume.
 The shared module avoids infrastructure drift. The environment is fixed in each
 root, not selected by tfvars or Terraform workspaces. Run commands in the intended
 root; never copy state between them. Backend paths resolve relative to that root.
-Use separate Hetzner projects/tokens if stronger account-level isolation is needed.
+Hetzner projects are separate: `instantly-stg` and `instantly-prod`. Each has its
+own project-scoped API token in its environment directory’s gitignored `.env`.
+Never put the production Hetzner token in the staging file, or vice versa.
 Cloudflare can use the same existing authoritative zone; GoDaddy stays registrar.
 
 APP has public + private networking and hosts Coolify/apps/wg-easy/CoreDNS. DATA
@@ -38,11 +40,12 @@ for DATA. VPN clients use split-tunnel routes. Runtime services stay under Cooli
 ```sh
 cd /Users/faruk/dev/workspace/instantly-infra/terraform/environments/stg
 cp terraform.tfvars.example terraform.tfvars
-# Replace placeholders; inject tokens with your secret manager.
-terraform init
-terraform validate
-terraform plan -out=changes.tfplan
-# Review before running: terraform apply changes.tfplan
+# Replace tfvars placeholders and fill this directory’s .env from .env.example.
+cd /Users/faruk/dev/workspace/instantly-infra
+./scripts/tf.sh stg init
+./scripts/tf.sh stg validate
+./scripts/tf.sh stg plan -out=changes.tfplan
+# Review before running: ./scripts/tf.sh stg apply changes.tfplan
 ```
 
 Required values in gitignored `terraform.tfvars`: `domain` (the base authoritative
@@ -78,3 +81,46 @@ plans, credentials and provider caches. Provider lock files are tracked.
 See [validation](docs/VALIDATION.md) for actual checks performed. Static/mock
 checks do not replace the live bootstrap, network and restore checks in the
 [runbook](docs/OPERATIONS.md). Each environment has single APP/DATA hosts, not HA.
+
+## Credentials per environment
+
+- `terraform/environments/stg/.env`: token from the `instantly-stg` Hetzner project.
+- `terraform/environments/prod/.env`: token from the `instantly-prod` Hetzner project.
+
+Both use the variable name `HCLOUD_TOKEN`, but load different values. The helper
+`scripts/tf.sh stg|prod ...` clears inherited provider tokens and loads only the
+chosen environment's file; it rejects blank tokens. It cannot detect a token
+accidentally pasted into the wrong file. Terraform itself does not load `.env`.
+The existing root `.env` has been relocated to staging, preserving its contents.
+Local credential files are chmod 600, gitignored, and plaintext on disk.
+
+Cloudflare uses the same `anonly.live` zone for both environments. You can create
+separate Cloudflare tokens, but DNS edit permission scoped to that zone covers
+both environments' records; it is not restricted to the staging subdomains.
+
+## Staging application object storage
+
+Terraform also creates the private `anonly-instantly-stg-app` bucket in Nuremberg
+through Hetzner's S3 API (MinIO provider). Endpoint:
+`https://nbg1.your-objectstorage.com`, region `nbg1`. No extra server volume is needed.
+Bucket deletion is guarded by `prevent_destroy` and `force_destroy = false`.
+This bucket stores application objects; it is not a backup bucket or state backend.
+Production has no application bucket provisioned by this change.
+
+In the **instantly-stg** Hetzner project, open **Security → S3 Credentials →
+Generate credentials**. Put the Access Key in `MINIO_USER` and Secret Key in
+`MINIO_PASSWORD` in `terraform/environments/stg/.env`. These are different from
+the Cloud API token. Do not commit them. The helper requires these credentials
+for staging and clears inherited S3 credentials when switching environments.
+
+Use the bucket/endpoint/region output in the application's Coolify configuration;
+store S3 credentials in Coolify secrets. Never ship them to the browser. Downloads
+can go through the application or use signed URLs. Public access and browser
+upload CORS have not been enabled. Project S3 keys must not be treated as
+bucket-scoped application credentials; review bucket policy access before production.
+
+The earlier 10-resource saved plan was removed because it excluded this bucket.
+Run a fresh staging plan after adding the S3 credentials. Bucket name availability
+and live S3 permissions remain to be checked. No resources have been deployed.
+
+Reference: https://docs.hetzner.com/storage/object-storage/getting-started/creating-a-bucket-minio-terraform/

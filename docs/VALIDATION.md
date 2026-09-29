@@ -23,3 +23,11 @@ Production has only been validated, not deployed. Actual Linux bootstrap,
 NAT/firewall behavior, mounting, Coolify, VPN and restores still require the
 post-deployment checks in OPERATIONS.md. Run scripts/check.sh to reproduce
 configuration checks without cloud credentials.
+
+## Application bucket addition
+
+Staging now includes MinIO provider 3.33.1 and a private application bucket at
+nbg1. Provider initialization and Terraform validation completed; the staging
+mock test covers bucket naming, private ACL, non-force deletion and region.
+Live S3 plan/apply is pending the project's S3 credentials. The saved plan from
+before the bucket addition was removed so it cannot deploy stale configuration.

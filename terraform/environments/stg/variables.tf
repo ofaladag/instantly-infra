@@ -96,3 +96,13 @@ variable "install_coolify" {
   type        = bool
   default     = false
 }
+
+variable "application_bucket_name" {
+  description = "Globally unique staging application bucket name."
+  type        = string
+  default     = "anonly-instantly-stg-app"
+  validation {
+    condition     = length(var.application_bucket_name) >= 3 && length(var.application_bucket_name) <= 63 && can(regex("^[a-z][a-z0-9-]*[a-z0-9]$", var.application_bucket_name))
+    error_message = "Use 3–63 lowercase letters, numbers or hyphens, beginning with a letter and ending with a letter or number."
+  }
+}

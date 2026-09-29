@@ -14,15 +14,14 @@ table inet instantly_data {
     ct state invalid drop
     udp sport 67 udp dport 68 accept
     ip protocol icmp accept
-    ip saddr ${app_ip} tcp dport { 22, 6379 } accept
-    iifname "$private_if" ip saddr ${network_cidr} tcp dport 5432 accept
+    ip saddr ${app_ip} tcp dport 22 accept
+    iifname "$private_if" ip saddr ${network_cidr} tcp dport { 5432, 6379 } accept
   }
   chain forward {
     type filter hook forward priority -10; policy accept;
     ct state established,related accept
     ct state invalid drop
-    iifname "$private_if" ip saddr ${app_ip} meta l4proto tcp ct original proto-dst 6379 accept
-    iifname "$private_if" ip saddr ${network_cidr} meta l4proto tcp ct original proto-dst 5432 accept
+    iifname "$private_if" ip saddr ${network_cidr} meta l4proto tcp ct original proto-dst { 5432, 6379 } accept
     iifname "$private_if" drop
   }
 }

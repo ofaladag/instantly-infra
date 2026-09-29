@@ -65,7 +65,7 @@ old starter state or apply the original generated repository again.
    TLS certificates; keep a scoped ACME token in Coolify secrets.
 10. Create PostgreSQL and Redis on DATA. Bind published ports to 10.20.0.30 only;
     allow 5432/6379. PostgreSQL permits the entire staging private network
-    (10.20.0.0/16); Redis and SSH remain restricted to APP. If Coolify uses a port proxy, verify its bindings and reachability.
+    (10.20.0.0/16); Redis permits the same private CIDR; SSH remains restricted to APP. If Coolify uses a port proxy, verify its bindings and reachability.
     Bind-mount database data into /data/instantly/postgres and /data/instantly/redis,
     using the engine/image-specific container data path and ownership. Confirm
     the container uses the configured bind path before writing real data. In prod
@@ -90,7 +90,7 @@ Back up Coolify's own configuration, SSH keys and encryption key separately.
   works through APP. Check downloads and container pulls, not just ping.
 - From untrusted internet, only intended public HTTP(S)/WireGuard are reachable;
   SSH works only from admin CIDRs; DNS, DBs and admin ports are closed.
-- DATA accepts PostgreSQL 5432 from the private-network CIDR and SSH/Redis
+- DATA accepts PostgreSQL 5432 from the private-network CIDR and Redis 6379 from the private-network CIDR and SSH
   from APP only, rejecting other sources, including
   Docker-published ports. Inspect `nft list table inet instantly_data`.
 - Reboot each server and restart Docker: DATA route/firewall return, APP NAT

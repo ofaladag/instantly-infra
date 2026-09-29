@@ -35,7 +35,7 @@ were created for that account by the agent. The public firewall does not expose 
 
 Owner selected `postgis/postgis:17-3.5-alpine` and `redis:7.2`.
 Both are intended as standalone Coolify database resources on DATA-01, in
-project `instantly`, environment `stg`. PostGIS is now deployed and healthy; Redis deployment is still pending.
+project `instantly`, environment `stg`. PostGIS is now deployed and healthy; Redis is also deployed and healthy.
 
 Persistent directory mappings before first start:
 - PostGIS: /data/instantly/postgres → /var/lib/postgresql/data
@@ -68,7 +68,7 @@ ran pg_isready against 10.20.0.30:5432. PostgreSQL reports healthy.
 PostgreSQL TCP 5432 now accepts clients arriving on DATA's private interface
 from the entire staging Hetzner network 10.20.0.0/16. Docker DNAT ingress and
 host input use matching source-CIDR rules. The database still binds exclusively
-to 10.20.0.30:5432. SSH/Redis rules remain APP-only. Database authentication is
+to 10.20.0.30:5432. SSH remains APP-only; Redis now uses the same private-network policy. Database authentication is
 still required. APP-to-DATA readiness passed after applying the firewall.
 
 The persistent host firewall script and repository template were updated. DATA
@@ -76,3 +76,20 @@ cloud-init user_data now has ignore_changes: subsequent first-boot template
 edits require explicit application to running hosts, avoiding server replacement.
 Future VPN peers masqueraded as APP would share APP access; no VPN is deployed
 at this point. This rule is network-source control, not an identity boundary.
+
+## Redis queue configuration
+
+Coolify resource pbeoyfkzdf8mzexek4nsleeb runs redis:7.2 on DATA-01.
+At the owner's request it is passwordless, with custom requirepass "" and
+protected-mode no, behind host private-interface/source-CIDR filtering.
+Docker binds only 10.20.0.30:6379; both host input and Docker forwarding admit
+5432/6379 from 10.20.0.0/16. The public-proxy option remains disabled.
+Connection: redis://10.20.0.30:6379/0 (no username or password).
+
+Configuration is stored in Coolify and mirrored in services/redis/redis.conf:
+AOF enabled, appendfsync everysec, RDB snapshots, maxmemory 512mb and noeviction.
+At the memory limit, new writes may fail rather than silently evict queue keys.
+The existing /data named volume is retained. Runtime configuration, healthy
+container state, AOF write status and passwordless PONG from APP were verified.
+AOF everysec can lose roughly the last second of writes on a crash; it does not
+replace off-host backups. No destructive persistence test was performed.

@@ -6,8 +6,8 @@
 - Project/environment: `instantly` / `stg`; destination: APP-01, `coolify` network.
 - Build pack: Dockerfile, base directory `/`, Dockerfile `/Dockerfile`.
 - Nginx container port: `80`; no host port mapping; memory limit: `128M`.
-- Dockerfile health check: `GET /healthz`; no application secrets or environment
-  variables are needed by this initial UI.
+- Dockerfile health check: `GET /healthz`; the frontend has no application
+  secrets. The management UI uses same-origin `/api/v1/*` requests.
 
 CoreDNS maps the hostname to `10.20.0.20` in `services/coredns/internal.hosts`.
 The live hosts file is `/data/instantly/coredns/internal.hosts` on APP and reloads
@@ -18,6 +18,10 @@ It exposes this application only through the `internal-https` entrypoint and
 uses the existing `internal` DNS-01 certificate resolver. Private HTTP redirects
 to HTTPS through the existing proxy entrypoint. Do not replace these labels with
 Coolify's generated public-entrypoint labels. Preview deployments are disabled.
+
+The agents-be application's private Docker labels provide the higher-priority
+`/api` router on this same hostname; Nginx continues to serve the UI. See
+`services/agents-backend/README.md` for resource/env setup and verification.
 
 The internal resolver waits 120 seconds before checking DNS challenge propagation;
 the first Agents certificate request failed with NXDOMAIN during secondary ACME
@@ -42,10 +46,24 @@ Initial source commit: `6d92d58ded34c24cb51766d24d482549e767e3bc`.
 Local lint/build and the Coolify Docker build passed. GitHub ping and test-push
 deliveries returned 200; the push queued a deployment marked `is_webhook=true`.
 
-Verified on 2026-10-04: both deployments finished and the application reports
+Historical verification of the initial static UI on 2026-10-04 (before the
+persona management feature): both deployments finished and the application reports
 `running:healthy`. VPN DNS resolves to `10.20.0.20`; trusted HTTPS returns 200 for
 the page, JS/CSS assets, `/healthz`, and an SPA deep link. HTTP redirects to HTTPS
 with 308. The certificate is issued by Let's Encrypt YR2 and expires 2027-01-02.
 Requests to the public IP with the Agents Host/SNI return 503 over HTTPS and 404
 over HTTP. Existing backend health remains UP and the private Coolify login
 returns 200 after the proxy configuration update.
+
+## Persona workspace release
+
+On 2026-10-04, `main` commit `14ddd9b2d4074886afa382f28c5e024b3b0adb4a`
+triggered webhook deployment `9oz0qdqpnv4wu4xbqezl7e7l`, which finished
+successfully. The healthy running container uses that exact commit. VPN requests
+to the page, JS/CSS assets, `/healthz` and an SPA route returned 200; asset hashes
+matched the verified frontend build. The route remains on `internal-https`
+without host port mappings; public HTTPS/HTTP probes returned 503/404.
+
+At the time of the frontend-only release, agents-be was not deployed, so `/api`
+returned the HTML fallback and the workspace displayed an API connection error.
+The subsequent agents backend deployment is recorded in its service README.

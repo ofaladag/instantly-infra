@@ -1,0 +1,9 @@
+traefik.enable=true
+traefik.docker.network=coolify
+traefik.http.routers.instantly-agents-api-stg.entrypoints=internal-https
+traefik.http.routers.instantly-agents-api-stg.rule=Host(`agents.internal.stg.instantlyhere.com`) && (Path(`/api`) || PathPrefix(`/api/`))
+traefik.http.routers.instantly-agents-api-stg.priority=200
+traefik.http.routers.instantly-agents-api-stg.service=instantly-agents-api-stg
+traefik.http.routers.instantly-agents-api-stg.tls=true
+traefik.http.routers.instantly-agents-api-stg.tls.certresolver=internal
+traefik.http.services.instantly-agents-api-stg.loadbalancer.server.port=8080

@@ -33,4 +33,8 @@ run "root_wiring" {
     condition     = minio_s3_bucket.application.acl == "private" && !minio_s3_bucket.application.force_destroy && minio_s3_bucket.application.bucket == "anonly-instantly-stg-app" && output.application_object_storage.region == "nbg1"
     error_message = "Staging application bucket must be private, retained and in Nuremberg."
   }
+  assert {
+    condition     = minio_s3_bucket.agents.acl == "private" && !minio_s3_bucket.agents.force_destroy && minio_s3_bucket.agents.bucket != minio_s3_bucket.application.bucket && output.agents_object_storage.region == "nbg1"
+    error_message = "Agents portraits must stay in a separate private retained bucket."
+  }
 }

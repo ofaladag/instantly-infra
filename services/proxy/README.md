@@ -48,3 +48,10 @@ Coolify. Copy backend-webhook.yaml into the proxy dynamic directory as well. It
 adds only the exact POST GitHub webhook path on the public HTTPS entrypoint; the
 Coolify handler validates a per-application HMAC secret. Never broaden this route
 to expose the Coolify UI or general API.
+
+For the persona management application, `services/agents-backend/traefik-labels.txt`
+defines the higher-priority `/api` Docker router on the existing Agents hostname
+and private `internal-https` entrypoint; the frontend Docker route serves the UI.
+No extra static router, entrypoint, VPN relay or proxy secret is required.
+Registration service authentication is enforced inside instantly-be with the
+shared backend environment secret. See `services/agents-backend/README.md`.

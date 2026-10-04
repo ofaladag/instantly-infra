@@ -106,3 +106,13 @@ variable "application_bucket_name" {
     error_message = "Use 3–63 lowercase letters, numbers or hyphens, beginning with a letter and ending with a letter or number."
   }
 }
+
+variable "agents_bucket_name" {
+  description = "Private staging bucket for generated portrait drafts, separate from member media."
+  type        = string
+  default     = "anonly-instantly-stg-agents"
+  validation {
+    condition     = length(var.agents_bucket_name) >= 3 && length(var.agents_bucket_name) <= 63 && can(regex("^[a-z][a-z0-9-]*[a-z0-9]$", var.agents_bucket_name)) && var.agents_bucket_name != var.application_bucket_name
+    error_message = "Use a valid 3–63 character bucket name distinct from the application bucket."
+  }
+}

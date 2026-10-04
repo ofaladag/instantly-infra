@@ -105,6 +105,13 @@ Bucket deletion is guarded by `prevent_destroy` and `force_destroy = false`.
 This bucket stores application objects; it is not a backup bucket or state backend.
 Production has no application bucket provisioned by this change.
 
+The persona management feature adds a separate private draft-photo bucket,
+`anonly-instantly-stg-agents` (`agents_bucket_name`). It has the same deletion
+protection and is independent of published member media. Its runtime database,
+shared registration secret and existing VPN routing are documented in
+[Agents backend deployment](services/agents-backend/README.md). The new feature's
+OpenAI key is supplied as a backend runtime environment variable at deployment.
+
 In the **instantly-stg** Hetzner project, open **Security → S3 Credentials →
 Generate credentials**. Put the Access Key in `MINIO_USER` and Secret Key in
 `MINIO_PASSWORD` in `terraform/environments/stg/.env`. These are different from
@@ -117,8 +124,8 @@ can go through the application or use signed URLs. Public access and browser
 upload CORS have not been enabled. Project S3 keys must not be treated as
 bucket-scoped application credentials; review bucket policy access before production.
 
-The earlier 10-resource saved plan was removed because it excluded this bucket.
-Run a fresh staging plan after adding the S3 credentials. Bucket name availability
-and live S3 permissions remain to be checked. No resources have been deployed.
+Both staging buckets are now provisioned. The agents rollout applied a reviewed
+plan containing one new private bucket, no updates and no deletions. Run a fresh
+plan for later infrastructure changes; do not reuse old saved plans.
 
 Reference: https://docs.hetzner.com/storage/object-storage/getting-started/creating-a-bucket-minio-terraform/

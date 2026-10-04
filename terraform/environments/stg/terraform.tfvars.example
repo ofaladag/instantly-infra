@@ -19,3 +19,4 @@ install_coolify = false
 public_app_subdomains = ["api"]
 
 application_bucket_name = "anonly-instantly-stg-app"
+agents_bucket_name = "anonly-instantly-stg-agents"

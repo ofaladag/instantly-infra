@@ -1,0 +1,137 @@
+# Staging Agents backend
+
+- Source: `git@github.com:ofaladag/instantly-agents-be.git`, branch `main`.
+- Coolify application: `instantly-agents-be-stg`, UUID `2x1n7e7cswioh1tbgggi6pjc`.
+- Project/environment: `instantly` / `stg`; destination: APP-01, `coolify` network.
+- Build pack: Dockerfile, base directory `/`, Dockerfile `/Dockerfile`.
+- Container port: `8080`; no host port mappings; memory limit: `768M`.
+- Health check: `/actuator/health`, startup grace 60 seconds, 20 retries.
+- Java runtime: `MaxRAMPercentage=65.0`, IPv4 transport as on the existing backend.
+
+## Private API and service authentication
+
+The frontend calls relative `/api/v1/*` URLs on
+`https://agents.internal.stg.instantlyhere.com`. `traefik-labels.txt` contains
+the complete custom labels saved in Coolify: hostname plus `/api` path matching,
+priority 200, `internal-https` only, port 8080. The frontend catch-all continues
+to serve the UI. Docker service discovery follows deployments automatically;
+there is no separate static API router. Existing WireGuard, DNS and proxy port
+bindings remain unchanged. The stable private network alias is
+`instantly-agents-be-stg`.
+
+Instantly's registration, status and photo-activation routes validate
+`X-Agents-Key` against `AGENTS_SERVICE_KEY`. Both backends use the same
+runtime-only value. Ordinary member JWTs do not authorize those routes. There is no
+second ingress credential. Agents accepts only the configured browser Origin;
+tools without Origin may call it over the trusted VPN/private infrastructure.
+
+`INSTANTLY_BASE_URL=https://api.stg.instantlyhere.com` protects service credentials
+with HTTPS. `AGENT_REGISTRATION_ENABLED=true` and `AGENT_LOGIN_ENABLED=true`
+enable the workflow in instantly-be. Its independent test-only
+`PASSWORD_LOGIN_ENABLED` remains false.
+
+## Runtime resources
+
+DATA hosts a separate `instantly_agents` database owned by its dedicated login
+of the same name. The role has no superuser, create-database, create-role or
+replication privileges. PUBLIC access was revoked on this new database only;
+the existing Instantly database was preserved. Liquibase owns schema creation.
+The generated database password is stored in Coolify; its local recovery file
+is ignored `work/credentials/agents-backend.json`, mode 0600. The shared service
+credential's recovery file is `work/credentials/agents-service-key.json`, also
+mode 0600 and ignored.
+
+Terraform manages `anonly-instantly-stg-agents`, a private draft-image bucket at
+`https://nbg1.your-objectstorage.com`, region `nbg1`. It is separate from
+published member media and has `prevent_destroy` / `force_destroy=false` guards.
+Draft previews stream through the private agents API. Staging reuses the
+existing project's S3 credential already configured in instantly-be; this key
+is project-scoped, not restricted to the agents bucket.
+
+The dedicated GitHub deploy key is read-only and limited to the agents-backend
+repository. Its encrypted copy is in Coolify; the ignored local recovery file
+is `work/credentials/instantly-stg-agents-backend-deploy`.
+
+## Runtime environment
+
+All variables are runtime-only in Coolify. No credentials are build arguments
+or frontend variables, and no `.env` or private key is tracked in Git.
+
+| Variable | Configuration |
+|---|---|
+| `SERVER_ADDRESS`, `SERVER_PORT` | `0.0.0.0`, `8080` |
+| `DATABASE_URL` | `jdbc:postgresql://10.20.0.30:5432/instantly_agents` |
+| `DATABASE_USERNAME`, `DATABASE_PASSWORD` | Dedicated agents database login |
+| `AGENTS_ALLOWED_ORIGINS` | `https://agents.internal.stg.instantlyhere.com` |
+| `INSTANTLY_BASE_URL` | `https://api.stg.instantlyhere.com` |
+| `AGENTS_SERVICE_KEY` | Same runtime value as instantly-be |
+| `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET` | Private agents draft bucket above |
+| `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_PATH_STYLE` | Staging S3 credential, path style `true` |
+| `OPENAI_API_KEY` | Existing instantly-be key reused with owner approval; runtime-only |
+| `OPENAI_PERSONA_MODEL`, `OPENAI_IMAGE_MODEL` | `gpt-5-mini`, `gpt-image-1.5` |
+| `OPENAI_IMAGE_SIZE`, `OPENAI_IMAGE_MAX_BYTES` | `1024x1024`, `10485760` (10 MiB) |
+| `WORKER_CONCURRENCY`, `WORKER_MAX_FAILURES` | `2`, `5` |
+
+Missing OpenAI configuration does not prevent application startup. Generation
+reports a configuration error until the key is set; no build or test requires
+a live provider credential. Persona text and the selected photograph still
+require human approval before account registration.
+
+## Automatic deployments
+
+GitHub webhook `692146140` subscribes to main pushes through the existing
+public POST-only Coolify webhook URL. Its app-specific signing secret is
+stored encrypted in Coolify with a mode-0600 recovery file at ignored
+`work/credentials/agents-backend-webhook.json`. TLS verification is enabled;
+preview deployments are disabled. A signed skip-CD delivery passed signature
+validation without deploying; an unsigned request was rejected.
+
+## Deployment and verification
+
+Deploy through Coolify using the repository's Dockerfile and the private labels
+above. Never regenerate default public labels for this service. Preserve the
+database and bucket when rolling back application code.
+
+Verification covers application/container health, migrations, same-origin list
+APIs through the VPN, rejection of foreign browser origins, public Host/SNI
+isolation, authenticated S3 read/write and unauthenticated image denial, and
+registration denial without the shared key. A correct key is checked using a
+nonexistent registration ID so deployment checks do not create user accounts.
+The first real persona generation and approval is a separate operator action.
+
+The initial deployment on 2026-10-04,
+`b63536ba-9d1b-465b-8765-e5344548c70b`, ran commit
+`a5c6ac16b7a9d8716e662a64c13c317e828bfcee` healthy. Liquibase applied
+`agents:001` and released its lock; all six application tables belong to the
+dedicated agents role. Terraform applied exactly one bucket creation with no
+updates/deletions; the subsequent staging plan reported no changes.
+
+Authenticated object-storage write/read/delete checks passed, including the
+production Java 26 `S3ImageStorage` implementation and AWS SDK configuration.
+Anonymous object access returned 403; the temporary probe object was deleted.
+OpenAI model-access checks returned 200 for `gpt-5-mini` and `gpt-image-1.5`
+using the approved reused key. These were model metadata requests, not persona
+or image generation; inference, moderation and registration are not claimed as
+verified by this deployment check.
+
+The final automatic main-push deployment, `krzzxl2mdhlaoikjdfmzrpul`, finished
+healthy on `2aed645f7c0ebea06e5e41b3a4ffc1b59b6c9e24`. This also corrects
+the Origin rejection response to explicitly use UTF-8, verified with a real
+embedded-Tomcat regression test and strict decoding of the deployed HTTP body.
+The jobs/personas list APIs returned JSON with HTTP 200 through the VPN; foreign
+Origin returned 403, and invalid generation input returned 400 before creating
+a job. Public-IP Host/SNI probes returned HTTPS 503 and HTTP 404.
+
+The final credential audit confirmed that both running backends use the same
+rotated service key and that agents-be uses the approved existing OpenAI key.
+All agents credentials are runtime-only and absent from its image metadata and
+build history. Instantly's missing/wrong service-key checks returned 403; the
+current key reached the expected 404 for a nonexistent registration. See the
+backend README for the revoked prior service key's image-history note.
+
+An operator-started generation/approval also completed during the rollout.
+Read-only checks at 20:11 UTC observed one completed generation job, its persona
+`READY`, one registration attempt `ACTIVE`, and all eight workflow tasks `DONE`,
+including photo activation. An earlier transient 403 had cleared after operator
+retries; its exact source could not be established from the overwritten task
+state. Deployment checks did not generate, approve, retry or register this persona.

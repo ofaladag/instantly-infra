@@ -203,3 +203,37 @@ waits 120 seconds before propagation checks after an initial secondary-validator
 NXDOMAIN failure. The final Let's Encrypt certificate is valid through 2027-01-02.
 
 See `services/agents-frontend` for the saved labels and operating details.
+
+## Agents backend and persona workspace — 2026-10-04
+
+The persona workspace frontend runs commit
+`14ddd9b2d4074886afa382f28c5e024b3b0adb4a`. The new Coolify application
+`instantly-agents-be-stg` (`2x1n7e7cswioh1tbgggi6pjc`) serves its same-origin
+`/api/v1/*` requests on the existing VPN-only Agents hostname. Its Docker router
+uses `internal-https`, priority 200 and container port 8080 with no host binding.
+Memory is limited to 768 MB; main pushes use signed GitHub webhook `692146140`.
+
+DATA contains a dedicated `instantly_agents` database and restricted owner/login.
+Liquibase created the six application tables and released its lock. Terraform
+created the private `anonly-instantly-stg-agents` draft-photo bucket, with no
+changes or deletions to existing infrastructure. The subsequent live plan
+reported no changes. S3 write/read/delete and anonymous-denial checks passed,
+including the backend's actual Java storage implementation.
+
+Instantly-be runs merged PR #75 at commit
+`5f8bc0a41701f127cb8265b3236fb154395d0dda`, with agent registration/login enabled
+and the separate test password-login flag disabled. Its webhook signature
+mismatch was repaired. Both backends use a newly rotated runtime-only
+`AGENTS_SERVICE_KEY`; the revoked old key is rejected. The old value remains in
+the reused backend image's build history, but the new key is absent from it.
+
+The owner approved reusing instantly-be's OpenAI key as agents-be's runtime-only
+`OPENAI_API_KEY`. Model metadata requests for `gpt-5-mini` and `gpt-image-1.5`
+returned 200. Deployment verification did not generate personas or images,
+approve drafts, or create accounts. A separate operator-started workflow was
+observed complete: one persona `READY`, one registration attempt `ACTIVE`, and
+all eight tasks `DONE`, including photo activation. The final backend webhook
+deployment `krzzxl2mdhlaoikjdfmzrpul` runs commit
+`2aed645f7c0ebea06e5e41b3a4ffc1b59b6c9e24` healthy. VPN API responses, UTF-8
+Origin rejection, service-key authorization and public isolation passed. See
+`services/agents-backend` for runtime variables and operating details.

@@ -50,6 +50,7 @@ services:
     - --entrypoints.internal-http.http.redirections.entrypoint.scheme=https
     - --certificatesresolvers.internal.acme.dnschallenge.provider=cloudflare
     - --certificatesresolvers.internal.acme.dnschallenge.resolvers=1.1.1.1:53
+    - --certificatesresolvers.internal.acme.dnschallenge.propagation.delaybeforechecks=120s
     - --certificatesresolvers.internal.acme.storage=/traefik/acme-internal.json
     labels:
     - traefik.enable=true

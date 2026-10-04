@@ -6,6 +6,7 @@ Production is unchanged.
 - VPN endpoint: vpn.stg.instantlyhere.com:51820 (DNS-only)
 - Coolify: https://coolify.internal.stg.instantlyhere.com (VPN)
 - WireGuard admin: https://wg.internal.stg.instantlyhere.com (VPN)
+- Agents frontend: https://agents.internal.stg.instantlyhere.com (VPN)
 - PostgreSQL/Redis: postgres.internal.stg.instantlyhere.com and
   redis.internal.stg.instantlyhere.com; private addresses/ports unchanged.
 

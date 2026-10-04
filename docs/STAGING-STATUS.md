@@ -181,3 +181,25 @@ valid device notification retry; a transport check does not verify delivery.
 Primary staging domain is now instantlyhere.com. See [migration details](DOMAIN-MIGRATION.md)
 for current URLs and client profile updates.
 Earlier entries above describe the historical deployment.
+
+## Agents frontend — 2026-10-04
+
+Coolify application `instantly-agents-fe-stg` (`r2b4zvgoxvrsdm9stva8ylfh`) serves
+https://agents.internal.stg.instantlyhere.com exclusively through the staging VPN.
+CoreDNS points it to APP's private `10.20.0.20`; custom Docker labels use only
+`internal-https`. No host ports or public DNS records were added for the UI.
+
+The private `ofaladag/instantly-agents-fe` main branch builds with the repository
+Dockerfile, using a dedicated read-only deploy key. Nginx serves port 80 with a
+128 MB memory limit and a Docker `/healthz` check. Initial commit: `6d92d58`.
+GitHub webhook `692124166` uses the existing signed, POST-only public webhook
+endpoint; its test push completed an automatic deployment successfully.
+
+Local lint/build, Docker build, container health, trusted HTTPS, JS/CSS assets,
+SPA fallback, and private HTTP-to-HTTPS redirect passed. Public-IP requests using
+the Agents hostname do not serve the app (HTTPS 503, HTTP 404). Backend health
+and private Coolify access remain healthy. Internal ACME DNS validation now
+waits 120 seconds before propagation checks after an initial secondary-validator
+NXDOMAIN failure. The final Let's Encrypt certificate is valid through 2027-01-02.
+
+See `services/agents-frontend` for the saved labels and operating details.

@@ -8,7 +8,7 @@ DNS listens on 10.20.0.20:53 over UDP and TCP, not the public address.
 The local system resolver at 127.0.0.53 is unchanged. Unknown internal names
 return NXDOMAIN; other zones forward to 1.1.1.1 and 9.9.9.9.
 
-The internal hosts map Coolify/wg-easy to APP and PostgreSQL/Redis to DATA.
+The internal hosts map Coolify/wg-easy/Agents to APP and PostgreSQL/Redis to DATA.
 DNS does not supply ports. The private HTTPS proxy now serves Coolify and
 wg-easy on port 443 (see services/proxy). PostgreSQL uses 5432 and Redis 6379.
 

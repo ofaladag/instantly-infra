@@ -237,3 +237,29 @@ deployment `krzzxl2mdhlaoikjdfmzrpul` runs commit
 `2aed645f7c0ebea06e5e41b3a4ffc1b59b6c9e24` healthy. VPN API responses, UTF-8
 Origin rejection, service-key authorization and public isolation passed. See
 `services/agents-backend` for runtime variables and operating details.
+
+## Agents feedback and generation progress — 2026-10-05
+
+Backend main `9d47d0f0f8e3c6b768745d66abca7bdae9e2e238` and frontend main
+`5f433b7345ce9c5a1e29b821a3f104d94190ed26` are deployed and healthy. Deployment
+IDs are `elw7nl6rf4fex5b20cvfpbhl` and `qlbgcn5nxswmavqjmvrckmmc`, respectively.
+Feedback starts a new reviewed iteration; profiles are instructed to use Turkish
+first-person prose and nicknames. UI progress distinguishes queued/running work
+and its current generation stage. Backend 75 tests and frontend 27 tests passed;
+frontend lint/build and final private-ingress/service-key probes passed.
+
+Work stopped at the owner's request before final live evaluation completed.
+The final three-profile evaluation job is `0d31ac95-b498-48c9-8244-b333b87b6c26`;
+feedback evaluation persona is `edef30d9-4dc4-44f5-b0a2-cd757844f320`.
+Already queued application work was left running. No approval or registration was
+submitted by deployment verification; an externally approved earlier evaluation
+profile was observed registered and must be preserved.
+
+Follow-up: new direction fields are persisted and reach planning, but live output
+still repeats workshop/community life stories. One semantic rejection correctly
+matched an older failed plan. Character references include failed plans; text
+retries preserve the accepted plan, so they cannot repair similarity inherent in
+that plan. Voice direction has no dedicated field in the character-plan schema.
+Review these quality limitations and the final evaluation outcomes before claiming
+the diversity problem fully resolved. Private evaluation records/photos remain
+ignored under `work/` and are not committed.

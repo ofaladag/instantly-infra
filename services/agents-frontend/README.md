@@ -67,3 +67,25 @@ without host port mappings; public HTTPS/HTTP probes returned 503/404.
 At the time of the frontend-only release, agents-be was not deployed, so `/api`
 returned the HTML fallback and the workspace displayed an API connection error.
 The subsequent agents backend deployment is recorded in its service README.
+
+The diversity-review update on 2026-10-04 runs main commit
+`0619e37e0d065f3906cf568bb1c1e4bbb2957e3c`, webhook deployment
+`pigoshzejc3fqic91t7kcfpg` (finished, healthy). It displays rejected portrait
+candidates for private review while keeping approval disabled until an image
+passes the backend diversity check. All 17 frontend tests, lint and the production
+build passed; the deployed page returned HTTP 200.
+
+Feedback iteration UI release `7ec0a18778a870d10d21f71b4421c9f621dbf08b`
+deployed healthy via `oznynn5vqv9v8bdnypuslyfy`. The detail panel sends 1–2000
+characters of feedback with the expected persona version. Unsaved edits, stale
+versions, registered accounts and in-flight work disable submission. Feedback
+survives version conflicts; regeneration results return to the normal polling
+and approval flow. Its 22 tests, lint, production build and local mocked UI
+smoke passed without calling live providers.
+
+Generation-progress release `5f433b7345ce9c5a1e29b821a3f104d94190ed26`
+deployed healthy via `qlbgcn5nxswmavqjmvrckmmc` at 21:08:40 UTC (2026-10-05
+locally). Cards and details distinguish queued from running work for planning,
+text, image generation and image review. Polling accepts progress updates at the
+same persona version while preserving content and ignoring older responses.
+All 27 tests, including rendered component checks, lint and production build passed.

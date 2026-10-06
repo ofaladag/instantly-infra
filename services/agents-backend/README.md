@@ -275,3 +275,44 @@ tasks, no active leases, no pending generation and six already-active registrati
 attempts. Live deployment verification did not create application jobs, register
 accounts or alter task leases. Historical completed jobs cannot reveal which
 provider produced their earlier content merely from the new default settings.
+
+## Local-model profile and photo import release — 2026-10-06
+
+Backend main `5a21c1707dcfc966e6c99c6de8dc712e58637e6a` deployed through signed
+webhook deployment `kquoidsohg4fw9zln1lujyey`. The deployment finished and the
+container running that exact commit is healthy. Liquibase applied `agents:004`
+and released its lock. This additive migration creates the `persona_import`
+idempotency ledger; it does not change the worker task protocol or existing
+generation tables. No new environment variable, provider credential or runtime
+resource was required.
+
+The private `POST /api/v1/persona-imports` endpoint accepts two multipart files:
+`metadata` (JSON containing a UUID `requestId`, the external `model` name and
+profile `content`) and `photo` (JPEG or PNG). It creates a human-reviewable
+`DRAFT` with an `UPLOADED` photo and explicit `importSource` provenance, without
+calling NVIDIA or registering an account. `UPLOADED` does not claim automatic
+semantic or visual diversity review. Human approval continues through the
+existing immutable revision and registration workflow.
+
+Metadata is limited to 64 KiB; photos are limited to 10 MiB, 256–4096 pixels per
+edge and 16 million pixels overall. Images are validated before pixel allocation
+and normalized to metadata-free JPEG with transparency composited onto white.
+Unknown metadata fields cannot set lifecycle, approval or member state. A new
+request returns 201; an identical retry returns 200 for the same persona, while
+reusing a request ID for different content or image bytes returns 409. See the
+backend repository's `docs/LOCAL-MODEL-IMPORT.md`, `examples/local-persona.json`
+and `scripts/import-persona.py` for the local-model upload contract.
+
+Full backend verification passed 180 tests with zero failures, errors or skipped
+tests, including PostgreSQL and real HTTP multipart tests. The local Python
+uploader fixture passed separately. Live verification sent only an invalid
+multipart request with no photo: HTTP 400 with JSON `INVALID_REQUEST`. The
+private model/persona/job list APIs returned HTTP 200, persona/job responses
+exposed `importSource`, and a foreign browser Origin returned HTTP 403. The live
+import ledger remained empty; no valid profile, photo or account was created by
+deployment checks.
+
+Three operator-started PLAN tasks were still queued/running during the rollout.
+They were preserved under the existing retry and lease rules; deployment checks
+did not retry, cancel, clear leases or otherwise mutate those tasks. Their
+provider retries are separate from the import feature and its test results.

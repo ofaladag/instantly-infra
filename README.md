@@ -112,6 +112,8 @@ shared registration secret and existing VPN routing are documented in
 [Agents backend deployment](services/agents-backend/README.md). NVIDIA supplies
 text, vision review and portrait generation through a backend runtime API key.
 Muse Glimmer 30B is the default; supported text/vision models are selectable per job.
+Locally prepared profile text and photos can also be submitted together through
+the private import API for human review, without provider calls.
 
 In the **instantly-stg** Hetzner project, open **Security → S3 Credentials →
 Generate credentials**. Put the Access Key in `MINIO_USER` and Secret Key in

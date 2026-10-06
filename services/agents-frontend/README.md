@@ -124,3 +124,27 @@ Live browser verification also passed on the deployed page: Muse was selected
 by default, and the advanced controls showed 8192 tokens, temperature 1, top-p
 0.95 and reasoning disabled (`none`). Historical jobs displayed an explicit
 legacy-settings label. This browser check made no live writes.
+
+## Imported profile review release — 2026-10-06
+
+Frontend main `4190a667b3290965463ad31848381b6ebd0e7b9c` deployed through signed
+webhook deployment `t9x6yjn6lincc4goqsw2vqjx`. The deployment finished and its
+exact-commit container is healthy. Backend import release
+`5a21c1707dcfc966e6c99c6de8dc712e58637e6a` and migration `agents:004` were verified
+before pushing this frontend release.
+
+Profiles submitted through the local-model import API expose their original
+model via `importSource`. The job history labels these as externally supplied
+profiles, and an `UPLOADED` photo appears as awaiting human review. The detail
+panel explains that automatic text/photo diversity checks did not run during
+import. A complete imported draft with a loaded photo can enter the existing
+version-checked human approval flow. Provenance continues to describe the
+original import after later explicit regeneration.
+
+All 38 frontend tests, lint and the production build passed. Live checks returned
+HTTP 200 for the VPN page, `/healthz`, an SPA route and both assets. Served
+`index-CcYNotmd.js` and `index-CrJycliu.css` bytes matched the verified local
+build; the JavaScript contained the import provenance, `UPLOADED` and external
+model labels. The same-origin model catalog returned HTTP 200 with four models.
+No valid profile was imported and no account was registered for live deployment
+verification. Existing operator generation jobs were separate from these checks.

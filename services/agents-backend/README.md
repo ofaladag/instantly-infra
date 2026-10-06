@@ -52,10 +52,12 @@ The dedicated GitHub deploy key is read-only and limited to the agents-backend
 repository. Its encrypted copy is in Coolify; the ignored local recovery file
 is `work/credentials/instantly-stg-agents-backend-deploy`.
 
-## Runtime environment
+## NVIDIA runtime environment
 
 All variables are runtime-only in Coolify. No credentials are build arguments
 or frontend variables, and no `.env` or private key is tracked in Git.
+The deployed application uses NVIDIA for text, vision review and portrait
+generation. The same server-only key authenticates both provider endpoints.
 
 | Variable | Configuration |
 |---|---|
@@ -67,16 +69,24 @@ or frontend variables, and no `.env` or private key is tracked in Git.
 | `AGENTS_SERVICE_KEY` | Same runtime value as instantly-be |
 | `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET` | Private agents draft bucket above |
 | `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_PATH_STYLE` | Staging S3 credential, path style `true` |
-| `OPENAI_API_KEY` | Existing instantly-be key reused with owner approval; runtime-only |
-| `OPENAI_PERSONA_MODEL`, `OPENAI_IMAGE_MODEL` | `gpt-5-mini`, `gpt-image-1.5` |
-| `OPENAI_REASONING_EFFORT` | Application default `low` for planning/review latency; empty omits the optional API parameter |
-| `OPENAI_IMAGE_SIZE`, `OPENAI_IMAGE_MAX_BYTES` | `1024x1024`, `10485760` (10 MiB) |
+| `NVIDIA_API_KEY` | Owner-provided NVIDIA credential; runtime-only, with Coolify's build-time option disabled |
+| `NVIDIA_BASE_URL` | `https://integrate.api.nvidia.com/v1` |
+| `NVIDIA_PERSONA_MODEL` | `meta/muse-glimmer-30b`; default for jobs that omit model settings |
+| `NVIDIA_MAX_TOKENS` | `8192` |
+| `NVIDIA_IMAGE_ENDPOINT` | `https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.2-klein-4b` |
+| `NVIDIA_IMAGE_MAX_BYTES` | `10485760` (10 MiB) |
 | `WORKER_CONCURRENCY`, `WORKER_MAX_FAILURES` | `2`, `5` |
 
-Missing OpenAI configuration does not prevent application startup. Generation
+Missing NVIDIA configuration does not prevent application startup. Generation
 reports a configuration error until the key is set; no build or test requires
-a live provider credential. Persona text and the selected photograph still
-require human approval before account registration.
+a live provider credential. There is no OpenAI fallback. Persona text and the
+selected photograph still require human approval before account registration.
+
+Keep `NVIDIA_API_KEY` runtime-only before building an image. The agents
+application's old `OPENAI_*` settings are retained for rollback and are unused by
+the NVIDIA release. The separate Instantly backend keeps its own provider
+configuration. Historical OpenAI deployment checks below describe the earlier
+releases; the current code has no automatic fallback to OpenAI.
 
 ## Automatic deployments
 
@@ -204,3 +214,64 @@ Final local verification passed all 75 backend tests with PostgreSQL integration
 tests enabled. Post-deployment VPN, Origin, service-key and public-isolation
 checks passed again. Live generation evaluation remains subject to bounded
 semantic and visual review: distinct seeds do not guarantee distinct model output.
+
+## NVIDIA and per-job model settings release — 2026-10-06
+
+Backend main `1903d795dd13f2c05aa8613a1a56225d492531f2`, including the NVIDIA
+migration `af3db36`, deployed through signed webhook deployment
+`0gfgbj1qxvoaet21sqbgsf2k`. The deployment finished and the container running that
+exact commit is healthy. Full local Maven verification passed 148 tests with zero
+failures, errors or skipped tests, including Docker/PostgreSQL integration tests.
+
+The owner's existing `NVIDIA_API_KEY` was found on the agents Coolify application.
+Its build-time flag was disabled and its runtime flag retained; the credential
+value was not printed or persisted by verification. The non-secret NVIDIA
+defaults above were added as runtime-only settings, with Muse selected before
+deployment. The old agents `OPENAI_*` settings remain available for rollback,
+and the separate Instantly backend was not changed.
+
+`GET /api/v1/generation-models` now exposes four supported choices: Muse Glimmer
+30B, DeepSeek V4.1 Flash, GLM 5.3 Flash and Kimi K3. The default settings are Muse,
+8192 completion tokens, temperature 1, top-p 0.95 and reasoning effort `none`.
+Every model has an application token cap of 16384 and a temperature range of 0–1.
+Kimi omits top-p and supports `low`, `high` and `max` reasoning effort; DeepSeek
+and GLM omit reasoning controls on the documented hosted API. Muse and GLM
+vision requests are limited to eight images, with larger reference sets reviewed
+in chunks so the diversity reference coverage is preserved.
+
+Each job saves its resolved settings in the existing `generation_job.input`
+JSONB. Planning, text generation, semantic review, vision review, retries and
+feedback iterations reuse that snapshot. No database migration was required.
+The private catalog returned HTTP 200 with the exact defaults, limits and model
+capabilities above; persona/job list APIs returned JSON with HTTP 200 and a
+foreign browser Origin was rejected with HTTP 403.
+
+A bounded manual provider check generated one fictional adult portrait through
+FLUX.2-klein-4b: HTTP 200 in 2.63 seconds, one `SUCCESS` artifact, a valid
+1024×1024 JPEG of 135,404 bytes. The successful request used only `prompt`,
+`width`, `height`, `steps` and `seed`; additional fields from a different image
+API contract had previously returned HTTP 422 without generating an image.
+The generated image stayed in memory and was used once for the vision check.
+
+Muse returned a valid Turkish fictional-profile JSON response in 4.50 seconds.
+A separate live vision request sent two copies of an official NVIDIA public JPEG
+as base64 data URLs, matching the adapter's transport. It returned HTTP 200 in
+5.67 seconds of provider time (6.90 seconds including the sample download), valid
+JSON, `distinct=false` and a nonempty explanation. These were bounded manual
+provider checks, separate from the automated test suite.
+
+Earlier DeepSeek text inference with a JSON schema in the system prompt timed out after
+180.04 seconds; DeepSeek vision inference timed out after 180.02 seconds. Neither
+returned an HTTP response within the bound. The model catalog returned HTTP 200
+and included `deepseek-ai/deepseek-v4.1-flash`, but that read-only catalog check
+does not establish text inference access or availability. GLM 5.3 Flash and Kimi
+K3 also exceeded a 45-second bounded text probe. These observations do not claim
+those endpoints are permanently unavailable; only Muse and FLUX passed the
+corresponding live checks in this rollout. Selecting another model preserves its
+supported request contract but does not guarantee provider availability.
+
+A read-only agents database check before deployment found no queued/running
+tasks, no active leases, no pending generation and six already-active registration
+attempts. Live deployment verification did not create application jobs, register
+accounts or alter task leases. Historical completed jobs cannot reveal which
+provider produced their earlier content merely from the new default settings.

@@ -109,8 +109,9 @@ The persona management feature adds a separate private draft-photo bucket,
 `anonly-instantly-stg-agents` (`agents_bucket_name`). It has the same deletion
 protection and is independent of published member media. Its runtime database,
 shared registration secret and existing VPN routing are documented in
-[Agents backend deployment](services/agents-backend/README.md). The new feature's
-OpenAI key is supplied as a backend runtime environment variable at deployment.
+[Agents backend deployment](services/agents-backend/README.md). NVIDIA supplies
+text, vision review and portrait generation through a backend runtime API key.
+Muse Glimmer 30B is the default; supported text/vision models are selectable per job.
 
 In the **instantly-stg** Hetzner project, open **Security → S3 Credentials →
 Generate credentials**. Put the Access Key in `MINIO_USER` and Secret Key in

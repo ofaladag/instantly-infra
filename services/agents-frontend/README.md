@@ -89,3 +89,38 @@ locally). Cards and details distinguish queued from running work for planning,
 text, image generation and image review. Polling accepts progress updates at the
 same persona version while preserving content and ignoring older responses.
 All 27 tests, including rendered component checks, lint and production build passed.
+
+## NVIDIA model settings release — 2026-10-06
+
+Frontend main `61683b5b77c1882de1ca508ce1cca9576c526111` deployed through signed
+webhook deployment `o2k7efzs2lfnwyjkhc2tycsb`. The deployment finished and the
+container running that exact commit is healthy. Backend main
+`1903d795dd13f2c05aa8613a1a56225d492531f2` was deployed and its model catalog
+verified before pushing the frontend release.
+
+The creation form loads the supported NVIDIA models and their limits from
+`GET /api/v1/generation-models`. Muse Glimmer 30B is the default; DeepSeek V4.1
+Flash, GLM 5.3 Flash and Kimi K3 can also be selected. Changing models restores
+that model's defaults. Advanced controls expose completion tokens, temperature,
+supported top-p and supported reasoning effort. Job cards display the saved
+settings, which persist through retries and feedback iterations. These choices
+change text generation and vision review; portraits use NVIDIA FLUX.2-klein-4b.
+The UI receives model metadata only, with no provider key or configurable
+provider endpoint.
+
+All 35 frontend tests, lint and the production build passed. A local browser
+check submitted Kimi settings with 4096 tokens, temperature 0.6, `low` reasoning
+and no top-p, and verified the same settings in the local persisted job. This
+was separate from live deployment verification.
+
+After deployment, the VPN page, `/healthz`, an SPA route and JS/CSS assets all
+returned HTTP 200. The served `index-DmY2pgc7.js` and `index-DSSIX3Wv.css` bytes
+matched the verified local build. The same-origin model catalog returned HTTP
+200 with four models and Muse defaults. Live checks did not create generation
+jobs or register accounts. Provider availability is separate from catalog
+availability; the backend deployment notes record the bounded live model checks.
+
+Live browser verification also passed on the deployed page: Muse was selected
+by default, and the advanced controls showed 8192 tokens, temperature 1, top-p
+0.95 and reasoning disabled (`none`). Historical jobs displayed an explicit
+legacy-settings label. This browser check made no live writes.
